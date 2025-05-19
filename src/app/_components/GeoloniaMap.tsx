@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-// import { openReverseGeocoder } from '@geolonia/open-reverse-geocoder';
 
 // window.geolonia型
 declare global {
@@ -55,10 +54,6 @@ export default function GeoloniaMapVanilla() {
             markerRef.current = new window.geolonia.Marker()
                 .setLngLat([lng, lat])
                 .addTo(map!);
-
-            // 逆ジオコーダー（市区町村まで）
-            // const result = await openReverseGeocoder([lng, lat]);
-            // console.log(result);
 
             try {
                 // HeartRails Geo APIで逆ジオコーディング（丁目まで。番地情報は有料APIのGoogle Maps Geocoding APIとか・・・）
