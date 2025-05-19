@@ -21,6 +21,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable}`}>
+      <head>
+        <link rel="stylesheet" href="https://cdn.geolonia.com/v1/style.css" />   
+        <script src="https://cdn.geolonia.com/v1/embed?geolonia-api-key=cdacd76d78ab415fa0d529d6cf9f9e16"></script>     
+      </head>
       <body>
         <TRPCReactProvider>{children}</TRPCReactProvider>
       </body>

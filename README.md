@@ -27,3 +27,11 @@ You can check out the [create-t3-app GitHub repository](https://github.com/t3-os
 ## How do I deploy this?
 
 Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+
+## install
+
+pnpm install --save @geolonia/embed-react・・・これは不要か・・・
+pnpm install --save-dev @types/mapbox-gl
+pnpm install @geolonia/embed maplibre-gl
+pnpm install --save-dev @types/maplibre-gl
+pnpm install @geolonia/open-reverse-geocoder・・・市区町村までだった・・・
