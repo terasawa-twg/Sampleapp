@@ -1,20 +1,73 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "sqlite"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model locations {
+  location_id                       Int      @id @default(autoincrement())
+  name                              String
+  latitude                          Decimal  @db.Decimal(11, 8)
+  longitude                         Decimal  @db.Decimal(11, 8)
+  address                           String   @default("")
+  description                       String   @default("")
+  created_at                        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at                        DateTime @default(now()) @db.Timestamptz(6)
+  created_by                        Int
+  updated_by                        Int
+  users_locations_created_byTousers users    @relation("locations_created_byTousers", fields: [created_by], references: [user_id], onUpdate: NoAction, map: "fk_locations_created_by")
+  users_locations_updated_byTousers users    @relation("locations_updated_byTousers", fields: [updated_by], references: [user_id], onUpdate: NoAction, map: "fk_locations_updated_by")
+  visits                            visits[]
 
-    @@index([name])
+  @@index([latitude, longitude], map: "idx_locations_coords")
+  @@index([name], map: "idx_locations_name")
+}
+
+model users {
+  user_id                                     Int            @id @default(autoincrement())
+  username                                    String
+  locations_locations_created_byTousers       locations[]    @relation("locations_created_byTousers")
+  locations_locations_updated_byTousers       locations[]    @relation("locations_updated_byTousers")
+  visit_photos_visit_photos_created_byTousers visit_photos[] @relation("visit_photos_created_byTousers")
+  visit_photos_visit_photos_updated_byTousers visit_photos[] @relation("visit_photos_updated_byTousers")
+  visits_visits_created_byTousers             visits[]       @relation("visits_created_byTousers")
+  visits_visits_updated_byTousers             visits[]       @relation("visits_updated_byTousers")
+}
+
+model visit_photos {
+  photo_id                             Int      @id @default(autoincrement())
+  visit_id                             Int
+  file_path                            String
+  description                          String   @default("")
+  created_at                           DateTime @default(now()) @db.Timestamptz(6)
+  updated_at                           DateTime @default(now()) @db.Timestamptz(6)
+  created_by                           Int
+  updated_by                           Int
+  users_visit_photos_created_byTousers users    @relation("visit_photos_created_byTousers", fields: [created_by], references: [user_id], onUpdate: NoAction, map: "fk_photos_created_by")
+  users_visit_photos_updated_byTousers users    @relation("visit_photos_updated_byTousers", fields: [updated_by], references: [user_id], onUpdate: NoAction, map: "fk_photos_updated_by")
+  visits                               visits   @relation(fields: [visit_id], references: [visit_id], onUpdate: NoAction, map: "fk_photos_visit")
+
+  @@index([visit_id], map: "idx_photos_visit")
+}
+
+model visits {
+  visit_id                       Int            @id @default(autoincrement())
+  location_id                    Int
+  visit_date                     DateTime       @db.Timestamptz(6)
+  notes                          String         @default("")
+  rating                         Int            @default(0)
+  created_at                     DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at                     DateTime       @default(now()) @db.Timestamptz(6)
+  created_by                     Int
+  updated_by                     Int
+  visit_photos                   visit_photos[]
+  users_visits_created_byTousers users          @relation("visits_created_byTousers", fields: [created_by], references: [user_id], onUpdate: NoAction, map: "fk_visits_created_by")
+  locations                      locations      @relation(fields: [location_id], references: [location_id], onUpdate: NoAction, map: "fk_visits_location")
+  users_visits_updated_byTousers users          @relation("visits_updated_byTousers", fields: [updated_by], references: [user_id], onUpdate: NoAction, map: "fk_visits_updated_by")
+
+  @@index([visit_date], map: "idx_visits_date")
+  @@index([location_id], map: "idx_visits_location")
 }
