@@ -1,15 +1,11 @@
 'use client'
 // ここにimport
 import { MapPin } from 'lucide-react'; // アイコンライブラリ
-import { Button } from '@/components/ui/button'; // ボタンコンポーネント
-import { Input } from '@/components/ui/input'; // 入力コンポーネント
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'; // アバターコンポーネント
 
 // ここにinterfaceや型定義など
 // ページタイトルを受け取るプロパティ
 interface HeaderProps {
     title: string;
-    subtitle?: string;
 }
 
 export function Header({ title }: HeaderProps) {
