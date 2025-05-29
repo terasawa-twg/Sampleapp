@@ -1,8 +1,6 @@
 'use client'
-// ここにimport
-import { MapPin } from 'lucide-react'; // アイコンライブラリ
+import { MapPin } from 'lucide-react'; // マップアイコン
 
-// ここにinterfaceや型定義など
 // ページタイトルを受け取るプロパティ
 interface HeaderProps {
     title: string;
