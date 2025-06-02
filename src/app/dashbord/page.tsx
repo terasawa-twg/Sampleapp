@@ -6,7 +6,62 @@ import { Header } from '@/app/_components/Header';
 import { Calendar } from '@/app/_components/Calendar';
 import GeoloniaMap from '@/app/_components/GeoloniaMap';
 
+// 訪問履歴データの型定義
+interface Activity {
+  id: string;
+  date: string;
+  time: string;
+  location: string;
+  type: 'visit';
+  color: string;
+}
+
 export default function DashboardPage() {
+
+// データリストの定義（上部で定義）
+  const recentActivities: Activity[] = [
+    {
+      id: '1',
+      date: '2025年5月1日',
+      time: '13:00',
+      location: 'ABCD商店',
+      type: 'visit',
+      color: 'bg-green-500'
+    },
+    {
+      id: '2',
+      date: '2025年5月1日',
+      time: '13:00',
+      location: '株式会社サンプル',
+      type: 'visit',
+      color: 'bg-blue-500'
+    },
+    {
+      id: '3',
+      date: '2025年5月1日',
+      time: '13:00',
+      location: 'いろはマート',
+      type: 'visit',
+      color: 'bg-purple-500'
+    },
+    {
+      id: '4',
+      date: '2025年4月30日',
+      time: '15:30',
+      location: 'デパート田中',
+      type: 'visit',
+      color: 'bg-orange-500'
+    },
+    {
+      id: '5',
+      date: '2025年4月30日',
+      time: '10:00',
+      location: '山田商店',
+      type: 'visit',
+      color: 'bg-pink-500'
+    }
+  ];
+
   const currentUser = {
     name: "ジョン・スミス", 
     email: "johnsmith@email.jp"
@@ -50,33 +105,21 @@ export default function DashboardPage() {
                   <Calendar onDateSelect={handleDateSelect} />
                 </div>
 
-                {/* 最近の活動（可変幅） */}
+                {/* 最近の活動（可変幅） - mapメソッドで列挙 */}
                 <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200">
                   <div className="p-6 border-b border-gray-200">
                     <h2 className="text-lg font-semibold text-gray-900">最近の活動</h2>
                   </div>
                   <div className="p-6">
                     <div className="space-y-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-sm text-gray-600">2025年5月1日 13:00 - ABC商店を訪問</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-sm text-gray-600">2025年5月1日 13:00 - 株式会社サンプルを訪問</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                        <span className="text-sm text-gray-600">2025年5月1日 13:00 - いろはマートを訪問</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                        <span className="text-sm text-gray-600">2025年4月30日 15:30 - デパート田中を訪問</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
-                        <span className="text-sm text-gray-600">2025年4月30日 10:00 - 山田商店を訪問</span>
-                      </div>
+                      {recentActivities.map(activity => (
+                        <div key={activity.id} className="flex items-center space-x-3">
+                          <div className={`w-2 h-2 ${activity.color} rounded-full`}></div>
+                          <span className="text-sm text-gray-600">
+                            {activity.date} {activity.time} - {activity.location}を訪問
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -92,7 +135,6 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-
 
           </div>
         </main>
