@@ -149,6 +149,20 @@ export function Calendar({ onDateSelect }: CalendarProps) {
       <div className="grid grid-cols-7 gap-0.5">
         {calendarDays.map((dayInfo, index) => {
           const isTodayDate = isToday(dayInfo.fullDate);
+          const isSunday = index % 7 === 0; // 日曜日判定
+          const isSaturday = index % 7 === 6; // 土曜日判定
+
+          // テキスト色の決定
+          let textColor = 'text-gray-900'; // デフォルト
+          if (!dayInfo.isCurrentMonth) {
+            textColor = 'text-gray-300'; // 他の月
+          } else if (isTodayDate) {
+            textColor = 'text-white'; // 今日（赤背景なので白文字）
+          } else if (isSunday) {
+            textColor = 'text-red-600'; // 日曜日
+          } else if (isSaturday) {
+            textColor = 'text-blue-600'; // 土曜日
+          }
           
           return (
             <button
@@ -156,14 +170,13 @@ export function Calendar({ onDateSelect }: CalendarProps) {
               onClick={() => handleDateClick(dayInfo)}
               className={`
                 relative h-8 w-full text-xs font-medium rounded transition-colors
+                ${textColor}
                 ${!dayInfo.isCurrentMonth 
-                  ? 'text-gray-300 hover:bg-gray-50' 
+                  ? 'hover:bg-gray-50' 
                   : isTodayDate
-                    ? 'bg-red-500 text-white hover:bg-red-600' // 今日の日付は赤色
-                    : 'text-gray-900 hover:bg-gray-100'
+                    ? 'bg-red-500 hover:bg-red-600' // 今日の日付は赤色背景
+                    : 'hover:bg-gray-100'
                 }
-                ${index % 7 === 0 && dayInfo.isCurrentMonth && !isTodayDate ? 'text-red-600' : ''} // 日曜日は赤色
-                ${index % 7 === 6 && dayInfo.isCurrentMonth && !isTodayDate ? 'text-blue-600' : ''} // 土曜日は青色
               `}
             >
               {dayInfo.date}
