@@ -1,109 +1,66 @@
-import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
+import {
+  createVisitSchema,
+  updateVisitSchema,
+  visitIdSchema,
+  visitsByLocationSchema,
+  visitsByUserSchema,
+  visitsByDateRangeSchema,
+  visitsByRatingSchema,
+  userStatsSchema,
+  defaultVisitOrderBy,
+  visitIncludeBasic,
+  visitIncludeDetail,
+  visitIncludeByLocation,
+  visitIncludeByUser,
+  visitIncludeByDateRange,
+  visitIncludeByRating,
+} from "../schemas/visits";
 
 export const visitsRouter = createTRPCRouter({
   // 全訪問記録取得
   getAll: publicProcedure.query(async ({ ctx }) => {
     return await ctx.db.visits.findMany({
-      include: {
-        locations: {
-          select: {
-            name: true,
-            address: true,
-          },
-        },
-        users_visits_created_byTousers: {
-          select: { username: true },
-        },
-        visit_photos: {
-          select: {
-            photo_id: true,
-            file_path: true,
-            description: true,
-          },
-        },
-      },
-      orderBy: { visit_date: "desc" },
+      include: visitIncludeBasic,
+      orderBy: defaultVisitOrderBy,
     });
   }),
 
   // ID指定で訪問記録取得
   getById: publicProcedure
-    .input(z.object({ id: z.number() }))
+    .input(visitIdSchema)
     .query(async ({ ctx, input }) => {
       return await ctx.db.visits.findUnique({
         where: { visit_id: input.id },
-        include: {
-          locations: true,
-          users_visits_created_byTousers: {
-            select: { username: true },
-          },
-          users_visits_updated_byTousers: {
-            select: { username: true },
-          },
-          visit_photos: true,
-        },
+        include: visitIncludeDetail,
       });
     }),
 
   // 場所ID指定で訪問記録取得
   getByLocationId: publicProcedure
-    .input(z.object({ locationId: z.number() }))
+    .input(visitsByLocationSchema)
     .query(async ({ ctx, input }) => {
       return await ctx.db.visits.findMany({
         where: { location_id: input.locationId },
-        include: {
-          users_visits_created_byTousers: {
-            select: { username: true },
-          },
-          visit_photos: {
-            select: {
-              photo_id: true,
-              file_path: true,
-              description: true,
-            },
-          },
-        },
-        orderBy: { visit_date: "desc" },
+        include: visitIncludeByLocation,
+        orderBy: defaultVisitOrderBy,
       });
     }),
 
   // ユーザーID指定で訪問記録取得
   getByUserId: publicProcedure
-    .input(z.object({ userId: z.number() }))
+    .input(visitsByUserSchema)
     .query(async ({ ctx, input }) => {
       return await ctx.db.visits.findMany({
         where: { created_by: input.userId },
-        include: {
-          locations: {
-            select: {
-              name: true,
-              address: true,
-            },
-          },
-          visit_photos: {
-            select: {
-              photo_id: true,
-              file_path: true,
-              description: true,
-            },
-          },
-        },
-        orderBy: { visit_date: "desc" },
+        include: visitIncludeByUser,
+        orderBy: defaultVisitOrderBy,
       });
     }),
 
   // 訪問記録作成
   create: publicProcedure
-    .input(
-      z.object({
-        location_id: z.number(),
-        visit_date: z.date(),
-        notes: z.string().default(""),
-        rating: z.number().min(0).max(5).default(0),
-        created_by: z.number(),
-      }),
-    )
+    .input(createVisitSchema)
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.visits.create({
         data: {
@@ -125,15 +82,7 @@ export const visitsRouter = createTRPCRouter({
 
   // 訪問記録更新
   update: publicProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        visit_date: z.date().optional(),
-        notes: z.string().optional(),
-        rating: z.number().min(0).max(5).optional(),
-        updated_by: z.number(),
-      }),
-    )
+    .input(updateVisitSchema)
     .mutation(async ({ ctx, input }) => {
       const { id, updated_by, ...updateData } = input;
       
@@ -155,7 +104,7 @@ export const visitsRouter = createTRPCRouter({
 
   // 訪問記録削除
   delete: publicProcedure
-    .input(z.object({ id: z.number() }))
+    .input(visitIdSchema)
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.visits.delete({
         where: { visit_id: input.id },
@@ -164,13 +113,7 @@ export const visitsRouter = createTRPCRouter({
 
   // 期間指定で訪問記録取得
   getByDateRange: publicProcedure
-    .input(
-      z.object({
-        startDate: z.date(),
-        endDate: z.date(),
-        userId: z.number().optional(),
-      }),
-    )
+    .input(visitsByDateRangeSchema)
     .query(async ({ ctx, input }) => {
       return await ctx.db.visits.findMany({
         where: {
@@ -180,51 +123,25 @@ export const visitsRouter = createTRPCRouter({
           },
           ...(input.userId && { created_by: input.userId }),
         },
-        include: {
-          locations: {
-            select: {
-              name: true,
-              address: true,
-            },
-          },
-          users_visits_created_byTousers: {
-            select: { username: true },
-          },
-          visit_photos: {
-            select: {
-              photo_id: true,
-              file_path: true,
-            },
-          },
-        },
-        orderBy: { visit_date: "desc" },
+        include: visitIncludeByDateRange,
+        orderBy: defaultVisitOrderBy,
       });
     }),
 
   // 評価別で訪問記録取得
   getByRating: publicProcedure
-    .input(z.object({ rating: z.number().min(0).max(5) }))
+    .input(visitsByRatingSchema)
     .query(async ({ ctx, input }) => {
       return await ctx.db.visits.findMany({
         where: { rating: input.rating },
-        include: {
-          locations: {
-            select: {
-              name: true,
-              address: true,
-            },
-          },
-          users_visits_created_byTousers: {
-            select: { username: true },
-          },
-        },
-        orderBy: { visit_date: "desc" },
+        include: visitIncludeByRating,
+        orderBy: defaultVisitOrderBy,
       });
     }),
 
   // ユーザーの訪問統計取得
   getUserStats: publicProcedure
-    .input(z.object({ userId: z.number() }))
+    .input(userStatsSchema)
     .query(async ({ ctx, input }) => {
       const [totalVisits, averageRating, visitsByRating] = await Promise.all([
         // 総訪問数

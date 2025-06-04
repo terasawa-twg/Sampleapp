@@ -1,60 +1,39 @@
-import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
+import {
+  createLocationSchema,
+  updateLocationSchema,
+  locationIdSchema,
+  nearbyLocationSchema,
+  searchLocationSchema,
+  locationIncludeBasic,
+  locationIncludeDetail,
+} from "../schemas/locations";
+
+// 共通の並び順
+const defaultOrderBy = { created_at: "desc" } as const;
 
 export const locationsRouter = createTRPCRouter({
   // 全場所取得
   getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.locations.findMany({
-      include: {
-        users_locations_created_byTousers: {
-          select: { username: true },
-        },
-        _count: {
-          select: { visits: true },
-        },
-      },
-      orderBy: { created_at: "desc" },
+      include: locationIncludeBasic,
+      orderBy: defaultOrderBy,
     });
   }),
 
   // ID指定で場所取得
   getById: publicProcedure
-    .input(z.object({ id: z.number() }))
+    .input(locationIdSchema)
     .query(async ({ ctx, input }) => {
       return ctx.db.locations.findUnique({
         where: { location_id: input.id },
-        include: {
-          users_locations_created_byTousers: {
-            select: { username: true },
-          },
-          users_locations_updated_byTousers: {
-            select: { username: true },
-          },
-          visits: {
-            include: {
-              users_visits_created_byTousers: {
-                select: { username: true },
-              },
-              visit_photos: true,
-            },
-            orderBy: { visit_date: "desc" },
-          },
-        },
+        include: locationIncludeDetail,
       });
     }),
 
   // 場所作成
   create: publicProcedure
-    .input(
-      z.object({
-        name: z.string().min(1, "場所名は必須です"),
-        latitude: z.number().min(-90).max(90, "緯度は-90から90の間で入力してください"),
-        longitude: z.number().min(-180).max(180, "経度は-180から180の間で入力してください"),
-        address: z.string().default(""),
-        description: z.string().default(""),
-        created_by: z.number(),
-      })
-    )
+    .input(createLocationSchema)
     .mutation(async ({ ctx, input }) => {
       return ctx.db.locations.create({
         data: {
@@ -71,17 +50,7 @@ export const locationsRouter = createTRPCRouter({
 
   // 場所更新
   update: publicProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        name: z.string().min(1, "場所名は必須です"),
-        latitude: z.number().min(-90).max(90),
-        longitude: z.number().min(-180).max(180),
-        address: z.string().default(""),
-        description: z.string().default(""),
-        updated_by: z.number(),
-      })
-    )
+    .input(updateLocationSchema)
     .mutation(async ({ ctx, input }) => {
       return ctx.db.locations.update({
         where: { location_id: input.id },
@@ -99,7 +68,7 @@ export const locationsRouter = createTRPCRouter({
 
   // 場所削除
   delete: publicProcedure
-    .input(z.object({ id: z.number() }))
+    .input(locationIdSchema)
     .mutation(async ({ ctx, input }) => {
       return ctx.db.locations.delete({
         where: { location_id: input.id },
@@ -108,13 +77,7 @@ export const locationsRouter = createTRPCRouter({
 
   // 近くの場所を検索（緯度経度指定）
   getNearby: publicProcedure
-    .input(
-      z.object({
-        latitude: z.number(),
-        longitude: z.number(),
-        radiusKm: z.number().default(10), // デフォルト10km圏内
-      })
-    )
+    .input(nearbyLocationSchema)
     .query(async ({ ctx, input }) => {
       // 簡易的な距離計算（より正確にはHaversine公式を使用）
       const latDiff = 1 / 111; // 1km ≈ 1/111度
@@ -132,21 +95,14 @@ export const locationsRouter = createTRPCRouter({
             lte: input.longitude + (radius * lonDiff),
           },
         },
-        include: {
-          users_locations_created_byTousers: {
-            select: { username: true },
-          },
-          _count: {
-            select: { visits: true },
-          },
-        },
-        orderBy: { created_at: "desc" },
+        include: locationIncludeBasic,
+        orderBy: defaultOrderBy,
       });
     }),
 
   // 場所名で検索
   search: publicProcedure
-    .input(z.object({ query: z.string().min(1) }))
+    .input(searchLocationSchema)
     .query(async ({ ctx, input }) => {
       return ctx.db.locations.findMany({
         where: {
@@ -156,15 +112,8 @@ export const locationsRouter = createTRPCRouter({
             { description: { contains: input.query, mode: "insensitive" } },
           ],
         },
-        include: {
-          users_locations_created_byTousers: {
-            select: { username: true },
-          },
-          _count: {
-            select: { visits: true },
-          },
-        },
-        orderBy: { created_at: "desc" },
+        include: locationIncludeBasic,
+        orderBy: defaultOrderBy,
       });
     }),
 });
