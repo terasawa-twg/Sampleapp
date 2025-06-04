@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "../trpc";
 
 export const visitsRouter = createTRPCRouter({
   // 全訪問記録取得

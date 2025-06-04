@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "../trpc";
 
 export const visitPhotosRouter = createTRPCRouter({
   // 全写真取得
