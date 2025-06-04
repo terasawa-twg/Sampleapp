@@ -18,6 +18,9 @@
     "lint:fix": "next lint --fix",
     "preview": "next build && next start",
     "start": "next start",
+    "test:server": "cd src/server/tests && vitest",
+    "test:server:run": "cd src/server/tests && vitest run",
+    "test:server:ui": "cd src/server/tests && vitest --ui",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -94,6 +97,7 @@
     "tw-animate-css": "^1.2.9",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.27.0",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.0",
     "vitest-mock-extended": "^3.1.0"
   },
