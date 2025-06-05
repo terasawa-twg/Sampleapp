@@ -1,6 +1,5 @@
 import { defineConfig } from 'vitest/config';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import path from 'path';
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
@@ -13,12 +12,8 @@ export default defineConfig({
     clearMocks: true,
     restoreMocks: true,
   },
-  resolve: {
-    alias: {
-      '@': path.resolve(process.cwd(), 'src'),
-      '@/server': path.resolve(process.cwd(), 'src/server'),
-    },
-  },
+  // tsconfigPaths() が tsconfig.json の paths を自動読み込みするため
+  // resolve.alias は削除（競合を避ける）
   define: {
     'process.env.NODE_ENV': '"test"',
   },
