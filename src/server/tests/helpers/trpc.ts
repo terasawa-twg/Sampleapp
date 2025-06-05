@@ -1,11 +1,11 @@
 import { type inferAsyncReturnType } from '@trpc/server';
-// 相対パスに変更
-import { createTRPCContext } from '../../api/trpc';
-// 個別ルーターも相対パスに変更
-import { usersRouter } from '../../api/routers/users';
-import { visitsRouter } from '../../api/routers/visits';
-import { locationsRouter } from '../../api/routers/locations';
-import { visitPhotosRouter } from '../../api/routers/visit_photos';
+
+import { createTRPCContext } from '@/server/api/trpc';
+
+import { usersRouter } from '@/server/api/routers/users';
+import { visitsRouter } from '@/server/api/routers/visits';
+import { locationsRouter } from '@/server/api/routers/locations';
+import { visitPhotosRouter } from '@/server/api/routers/visit_photos';
 
 // Session型の定義（next-auth未使用のため自作）
 export interface Session {

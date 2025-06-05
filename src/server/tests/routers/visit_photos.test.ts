@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createTestContext, createVisitPhotosCaller, createMockSession } from '../helpers/trpc';
+import { createTestContext, createVisitPhotosCaller, createMockSession } from '@/server/tests/helpers/trpc';
 
 // dbをモック
 vi.mock('../../db', () => ({
