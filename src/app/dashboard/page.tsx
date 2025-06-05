@@ -83,19 +83,18 @@ export default function DashboardPage() {
       />
 
       {/* メインコンテンツエリア */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* ヘッダー */}
         <Header title="ダッシュボード" />
 
         {/* ページコンテンツ */}
-        <main className="flex-1 overflow-auto p-6">
-
-          {/* 2段レイアウト */}
-          <div className="space-y-6">
+        <main className="flex-1 overflow-y-auto overflow-x-auto p-6">
+          {/* 最小幅を設定してスクロールを可能にする */}
+          <div className="min-w-[800px] h-full flex flex-col gap-6">
             {/* 上段: カレンダーと最近の活動を横並び */}
             <div className="flex flex-col lg:flex-row gap-6">
               {/* カレンダー（固定幅320px） */}
-              <div className="w-80 flex-shrink-0">
+              <div className="w-full lg:w-80 flex-shrink-0">
                 <Calendar onDateSelect={handleDateSelect} />
               </div>
 
@@ -120,11 +119,11 @@ export default function DashboardPage() {
             </div>
 
             {/* 下段: 地図（可変幅） */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="flex-1 min-h-[400px] bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="p-2 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900">地図</h3>
               </div>
-              <div className="h-95">
+              <div className="h-full">
                 <GeoloniaMap />
               </div>
             </div>
