@@ -1,12 +1,19 @@
 'use client'
-// ここにimport
+import { MapPin } from 'lucide-react'; // マップアイコン
 
-// ここにinterfaceや型定義など
+// ページタイトルを受け取るプロパティ
+interface HeaderProps {
+    title: string;
+}
 
-export default function HeaderArea() {
-    // ここに処理
+export function Header({ title }: HeaderProps) {
     return (
-        // ここに描画する要素
-        <div />
+        <header className="h-16 border-b bg-white px-6 flex items-center">
+        {/* ページタイトルのみ */}
+            <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-red-500" />
+                <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+            </div>
+        </header>
     );
 }
