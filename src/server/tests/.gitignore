@@ -1,0 +1,7 @@
+# テスト関連の一時ファイル
+node_modules/
+.vite/
+.vite-temp/
+results.json
+coverage/
+*.log
