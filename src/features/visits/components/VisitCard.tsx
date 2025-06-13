@@ -1,8 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { Calendar, MapPin, User, Trash2, Eye, Star } from 'lucide-react';
 import type { VisitWithDetails } from '@/features/visits/types';
 import { useDeleteVisit } from '@/features/visits/hooks/useVisits';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 interface VisitCardProps {
   visit: VisitWithDetails;
@@ -10,8 +16,8 @@ interface VisitCardProps {
 }
 
 /**
- * 訪問履歴カードコンポーネント
- * - 訪問先での使用される簡潔なカード表示
+ * 訪問履歴カードコンポーネント (shadcn/ui版)
+ * - shadcn/uiコンポーネントを使用した美しいカード表示
  */
 export const VisitCard = ({ visit, index }: VisitCardProps) => {
   const deleteVisit = useDeleteVisit();
@@ -36,42 +42,122 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
     }).format(new Date(date));
   };
 
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-      {/* ヘッダー部分 */}
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-medium text-gray-900">
-            {index}. {visit.location.name}
-          </span>
+  const getRatingStars = (rating?: number) => {
+    if (!rating) return null;
+    const stars = Math.floor(rating / 2);
+    return (
+      <div className="flex items-center gap-1">
+        <div className="flex">
+          {[...Array(5)].map((_, i) => (
+            <Star
+              key={i}
+              className={cn(
+                "h-3 w-3",
+                i < stars 
+                  ? "fill-yellow-400 text-yellow-400" 
+                  : "text-muted-foreground"
+              )}
+            />
+          ))}
         </div>
+        <span className="text-xs text-muted-foreground ml-1">
+          {rating}/10
+        </span>
       </div>
+    );
+  };
 
-      {/* 訪問情報 */}
-      <div className="text-sm text-gray-600 mb-4">
-        <div>訪問日時: {formatDate(visit.visitDate)}</div>
-        {visit.user && (
-          <div>訪問者: {visit.user.name}</div>
+  return (
+    <Card className="group hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <Badge variant="secondary" className="text-xs">
+              #{index}
+            </Badge>
+            <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
+              {visit.location.name}
+            </h3>
+          </div>
+          {visit.photoCount > 0 && (
+            <Badge variant="outline" className="text-xs">
+              📷 {visit.photoCount}
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-3">
+        {/* 訪問日時 */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Calendar className="h-4 w-4" />
+          <span>{formatDate(visit.visitDate)}</span>
+        </div>
+
+        {/* 場所情報 */}
+        {visit.location.address && (
+          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+            <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <span className="line-clamp-2">{visit.location.address}</span>
+          </div>
         )}
-      </div>
 
-      {/* アクション部分 */}
-      <div className="flex justify-between items-center">
-        <Link 
-          href={`/visits/${visit.id}`}
-          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-        >
-          詳細を見る
-        </Link>
-        
-        <button
-          onClick={handleDelete}
-          disabled={deleteVisit.isPending}
-          className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50"
-        >
-          {deleteVisit.isPending ? '削除中...' : '削除'}
-        </button>
-      </div>
-    </div>
+        {/* 訪問者情報 */}
+        <div className="flex items-center gap-2">
+          <User className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-2">
+            <Avatar className="h-6 w-6">
+              <AvatarFallback className="text-xs">
+                {visit.user?.name?.charAt(0) || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-sm text-muted-foreground">
+              {visit.user?.name || 'ユーザー不明'}
+            </span>
+          </div>
+        </div>
+
+        {/* 評価 */}
+        {visit.rating && (
+          <div className="flex items-center gap-2">
+            {getRatingStars(visit.rating)}
+          </div>
+        )}
+
+        {/* メモ（最初の80文字のみ表示） */}
+        {visit.memo && (
+          <div className="text-sm text-muted-foreground bg-muted/50 p-2 rounded-md">
+            <p className="line-clamp-2">
+              {visit.memo.length > 80 
+                ? `${visit.memo.substring(0, 80)}...` 
+                : visit.memo
+              }
+            </p>
+          </div>
+        )}
+      </CardContent>
+
+      <CardFooter className="pt-3 border-t">
+        <div className="flex justify-between items-center w-full">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/visits/${visit.id}`}>
+              <Eye className="h-4 w-4 mr-1" />
+              詳細を見る
+            </Link>
+          </Button>
+          
+          <Button
+            onClick={handleDelete}
+            disabled={deleteVisit.isPending}
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            {deleteVisit.isPending ? '削除中...' : '削除'}
+          </Button>
+        </div>
+      </CardFooter>
+    </Card>
   );
 };
