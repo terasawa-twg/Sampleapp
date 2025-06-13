@@ -12,12 +12,13 @@ import { cn } from '@/lib/utils';
 
 interface VisitCardProps {
   visit: VisitWithDetails;
-  index: number;
+  index: number; // 配列のインデックス（今は使用しない）
 }
 
 /**
  * 訪問履歴カードコンポーネント (shadcn/ui版)
  * - shadcn/uiコンポーネントを使用した美しいカード表示
+ * - DB上の実際のvisit_idを#番号として表示
  */
 export const VisitCard = ({ visit, index }: VisitCardProps) => {
   const deleteVisit = useDeleteVisit();
@@ -72,8 +73,9 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="text-xs">
-              #{index}
+            {/* DB上の実際のvisit_idを表示 */}
+            <Badge variant="secondary" className="text-xs font-mono">
+              #{visit.id}
             </Badge>
             <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
               {visit.location.name}
