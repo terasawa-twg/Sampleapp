@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useRef, useEffect, useState } from 'react';
 import { 
   ArrowLeft, 
   Edit, 
@@ -27,13 +28,136 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
+// 🗺️ ピン表示対応の地図コンポーネント
+const SimpleMap = ({ 
+  latitude, 
+  longitude, 
+  visitId 
+}: { 
+  latitude?: number; 
+  longitude?: number; 
+  visitId?: number;
+}) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [mapStatus, setMapStatus] = useState('読み込み中...');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if ((window as any).geolonia && (window as any).geolonia.Map && mapRef.current) {
+        try {
+          // 環境変数からAPIキーを取得
+          const apiKey = process.env.NEXT_PUBLIC_GEOLONIA_API_KEY;
+          
+          if (!apiKey) {
+            console.error('❌ NEXT_PUBLIC_GEOLONIA_API_KEY が設定されていません');
+            setMapStatus('APIキー未設定エラー');
+            return;
+          }
+          
+          console.log('🔑 APIキー読み込み完了');
+          console.log('🌐 現在のURL:', window.location.href);
+          
+          const centerLng = longitude || 139.7671;
+          const centerLat = latitude || 35.6812;
+          
+          const map = new (window as any).geolonia.Map({
+            container: mapRef.current,
+            center: [centerLng, centerLat],
+            zoom: 16,
+            apiKey: apiKey,
+            // 地図の操作を制限してピンが動かないようにする
+            dragPan: true,      // パンは許可
+            scrollZoom: true,   // ズームは許可
+            boxZoom: false,     // ボックスズームは無効
+            doubleClickZoom: true, // ダブルクリックズームは許可
+            keyboard: true,     // キーボード操作は許可
+            touchZoomRotate: true // タッチズームは許可
+          });
+          
+          map.on('load', () => {
+            setMapStatus('地図表示成功');
+            
+            // ピンを追加（固定マーカー）
+            if (latitude && longitude) {
+              // カスタムマーカー要素を作成
+              const markerElement = document.createElement('div');
+              markerElement.className = 'custom-marker';
+              markerElement.innerHTML = `
+                <div style="
+                  background-color: #ef4444;
+                  color: white;
+                  border-radius: 50% 50% 50% 0;
+                  width: 24px;
+                  height: 24px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 12px;
+                  font-weight: bold;
+                  border: 2px solid white;
+                  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                  transform: rotate(-45deg);
+                  cursor: pointer;
+                ">
+                  <span style="transform: rotate(45deg);">#${visitId || '?'}</span>
+                </div>
+              `;
+              
+              // マーカーを地図に追加
+              new (window as any).geolonia.Marker({
+                element: markerElement,
+                draggable: false, // ドラッグ無効でピンを固定
+              })
+              .setLngLat([longitude, latitude])
+              .addTo(map);
+              
+              console.log(`📍 ピン追加完了: #${visitId} at [${longitude}, ${latitude}]`);
+            }
+          });
+          
+          map.on('error', (e: any) => {
+            console.error('地図エラー:', e);
+            setMapStatus('地図表示エラー');
+          });
+          
+        } catch (error) {
+          console.error('地図初期化エラー:', error);
+          setMapStatus('地図初期化エラー');
+        }
+      } else {
+        setMapStatus('Geoloniaライブラリ未読み込み');
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [latitude, longitude, visitId]);
+
+  return (
+    <div>
+      <div 
+        ref={mapRef} 
+        style={{ width: '100%', height: '240px' }} // 高さを少し増やしてピンが見やすく
+        className="rounded-lg border shadow-sm bg-gray-100"
+      />
+      <div className="flex items-center justify-between mt-2">
+        <p className="text-xs text-muted-foreground">
+          状態: {mapStatus}
+        </p>
+        {latitude && longitude && visitId && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="w-3 h-3 bg-red-500 rounded-full border border-white"></div>
+            <span>#{visitId} のピン表示中</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 interface VisitDetailsProps {
   visitId: number;
 }
 
-/**
- * 訪問履歴詳細ページのメインコンポーネント (shadcn/ui版)
- */
 export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
   const router = useRouter();
   const { visit, photos, locationVisits, isLoading, error } = useVisitDetails(visitId);
@@ -86,7 +210,6 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
     );
   };
 
-  // ローディング状態
   if (isLoading) {
     return (
       <div className="max-w-6xl mx-auto p-6">
@@ -98,7 +221,6 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
     );
   }
 
-  // エラー状態
   if (error || !visit) {
     return (
       <div className="max-w-6xl mx-auto p-6">
@@ -122,14 +244,12 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
     );
   }
 
-  // APIデータ構造に対応するための安全なアクセス
   const locationData = visit.locations;
   const userData = visit.users_visits_created_byTousers;
   const visitDate = visit.visit_date;
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      {/* ヘッダー */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <Button asChild variant="ghost" size="sm">
@@ -139,7 +259,9 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
             </Link>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+              {/* IDと＃番号を一致させて表示 */}
+              <span className="text-2xl text-muted-foreground font-mono">#{visitId}</span>
               {locationData?.name || '店舗名不明'}
             </h1>
             <p className="text-muted-foreground">訪問履歴詳細</p>
@@ -168,9 +290,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* メイン情報 */}
         <div className="lg:col-span-2 space-y-6">
-          {/* 店舗情報 */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -223,19 +343,40 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
                 </>
               )}
 
-              {/* 地図エリア */}
               <Separator />
               <div>
-                <span className="font-medium text-sm mb-3 block">地図</span>
-                <div className="w-full h-48 bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-muted-foreground/25">
-                  <div className="text-center">
-                    <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-muted-foreground font-medium">地図表示エリア</p>
-                    <p className="text-muted-foreground/70 text-xs mt-1">
-                      Geolonia Maps連携予定
-                    </p>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-medium text-sm flex items-center gap-2">
+                    地図
+                    {locationData?.latitude && locationData?.longitude && (
+                      <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
+                        #{visitId} ピン表示
+                      </Badge>
+                    )}
+                  </span>
+                  <div className="text-xs text-muted-foreground flex items-center gap-2">
+                    {locationData?.latitude && locationData?.longitude ? (
+                      <>
+                        <Badge variant="outline" className="text-xs">
+                          緯度: {Number(locationData.latitude).toFixed(6)}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          経度: {Number(locationData.longitude).toFixed(6)}
+                        </Badge>
+                      </>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">
+                        デフォルト位置（東京駅）
+                      </Badge>
+                    )}
                   </div>
                 </div>
+                
+                <SimpleMap
+                  latitude={locationData?.latitude ? Number(locationData.latitude) : undefined}
+                  longitude={locationData?.longitude ? Number(locationData.longitude) : undefined}
+                  visitId={visitId}
+                />
               </div>
             </CardContent>
           </Card>
@@ -377,8 +518,8 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
                     )}
                   </div>
                 ))}
-                
-                {/* 現在の訪問 */}
+
+                {/* 現在の訪問 */}                
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
                   <div className="font-medium text-sm">
                     {visitDate ? formatDate(visitDate).split(' ')[0] : '日時不明'}
@@ -390,8 +531,8 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
                     現在の訪問
                   </Badge>
                 </div>
-                
-                {/* 訪問履歴が1件もない場合 */}
+
+                {/* 訪問履歴が1件もない場合 */}                
                 {locationVisits.length === 0 && (
                   <div className="text-center py-4 text-muted-foreground text-sm">
                     この場所への過去の訪問履歴はありません
