@@ -1,35 +1,43 @@
 import { api } from '@/trpc/react';
 
 /**
- * 訪問履歴の詳細情報を取得するフック
- * @param visitId - 訪問履歴ID
- * @returns 詳細データ（訪問情報 + 写真）
+ * 訪問履歴詳細取得フック（拡張版）
+ * - 指定された訪問の詳細を取得
+ * - 写真データも取得
+ * - 同じ場所への過去の訪問履歴も取得
  */
 export const useVisitDetails = (visitId: number) => {
-  const visitQuery = api.visits.getById.useQuery({ id: visitId });
-  const photosQuery = api.visitPhotos.getByVisitId.useQuery({ visitId });
+  // 詳細データ取得
+  const { data: visit, isLoading: isVisitLoading, error: visitError } = api.visits.getById.useQuery(
+    { id: visitId },
+    { enabled: !!visitId }
+  );
 
-  // デバッグ用ログ
-  console.log('Visit Query Data:', visitQuery.data);
-  console.log('Photos Query Data:', photosQuery.data);
+  // 写真データ取得
+  const { data: photos, isLoading: isPhotosLoading } = api.visitPhotos.getByVisitId.useQuery(
+    { visitId },
+    { enabled: !!visitId }
+  );
+
+  // 同じ場所への訪問履歴取得（現在の訪問以外）
+  const { data: locationVisits, isLoading: isLocationVisitsLoading } = api.visits.getByLocationId.useQuery(
+    { locationId: visit?.location_id || 0 },
+    { 
+      enabled: !!visit?.location_id,
+      select: (data) => {
+        // 現在の訪問を除外し、日付順にソート
+        return data
+          ?.filter(v => v.visit_id !== visitId)
+          ?.sort((a, b) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime()) || [];
+      }
+    }
+  );
 
   return {
-    visit: visitQuery.data,
-    photos: photosQuery.data || [],
-    isLoading: visitQuery.isLoading || photosQuery.isLoading,
-    error: visitQuery.error || photosQuery.error,
-    refetch: () => {
-      visitQuery.refetch();
-      photosQuery.refetch();
-    },
+    visit,
+    photos,
+    locationVisits: locationVisits || [],
+    isLoading: isVisitLoading || isPhotosLoading || isLocationVisitsLoading,
+    error: visitError,
   };
-};
-
-/**
- * 特定の場所の訪問履歴を取得するフック
- * @param locationId - 場所ID
- * @returns その場所への訪問履歴一覧
- */
-export const useVisitsByLocation = (locationId: number) => {
-  return api.visits.getByLocationId.useQuery({ locationId });
 };
