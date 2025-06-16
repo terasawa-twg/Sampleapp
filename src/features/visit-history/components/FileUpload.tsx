@@ -7,27 +7,25 @@ import type { UploadedFile } from '../types/index';
 interface FileUploadProps {
   uploadedFiles: UploadedFile[];
   isDragOver: boolean;
-  fileDescription: string;
-  onFileDescription: (value: string) => void;
   onFileRemove: (fileId: string) => void;
   onFileInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onDragOver: (event: React.DragEvent<HTMLDivElement>) => void;
   onDragEnter: (event: React.DragEvent<HTMLDivElement>) => void;
   onDragLeave: (event: React.DragEvent<HTMLDivElement>) => void;
   onDrop: (event: React.DragEvent<HTMLDivElement>) => void;
+  onFileDescriptionChange: (fileId: string, description: string) => void;
 }
 
 export const FileUpload = ({
   uploadedFiles,
   isDragOver,
-  fileDescription,
-  onFileDescription,
   onFileRemove,
   onFileInputChange,
   onDragOver,
   onDragEnter,
   onDragLeave,
   onDrop,
+  onFileDescriptionChange,
 }: FileUploadProps) => {
   return (
     <div className="space-y-4">
@@ -52,17 +50,6 @@ export const FileUpload = ({
               {isDragOver ? 'ファイルをドロップしてください' : 'ファイルをここにドラッグ&ドロップしてください'}
             </p>
           </div>
-          
-          {/* ファイル説明入力 */}
-          <div className="max-w-md mx-auto">
-            <Input
-              type="text"
-              value={fileDescription}
-              onChange={(e) => onFileDescription(e.target.value)}
-              placeholder="ファイルの説明を入力してください"
-              className="text-sm"
-            />
-          </div>
 
           {/* ファイル選択ボタン */}
           <div>
@@ -86,33 +73,51 @@ export const FileUpload = ({
 
       {/* アップロードされたファイル一覧 */}
       {uploadedFiles.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-4">
           <p className="text-sm font-medium text-gray-700">
             アップロードされたファイル:
           </p>
-          <div className="space-y-2">
+          <div className="space-y-4">
             {uploadedFiles.map(file => (
               <div
                 key={file.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className="p-4 bg-gray-50 rounded-lg border"
               >
-                <div className="flex items-center space-x-3">
-                  <div className="text-sm">
-                    <p className="font-medium text-gray-900">{file.name}</p>
-                    <p className="text-gray-500">
-                      {(file.size / 1024).toFixed(1)} KB
-                    </p>
+                {/* ファイル情報行 */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="text-sm">
+                      <p className="font-medium text-gray-900">{file.name}</p>
+                      <p className="text-gray-500">
+                        {(file.size / 1024).toFixed(1)} KB
+                      </p>
+                    </div>
                   </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onFileRemove(file.id)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onFileRemove(file.id)}
-                  className="text-red-600 hover:text-red-800"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                
+                {/* ファイル説明入力 */}
+                <div className="space-y-2">
+                  <Label htmlFor={`file-desc-${file.id}`} className="text-xs text-gray-600">
+                    ファイルの説明
+                  </Label>
+                  <Input
+                    id={`file-desc-${file.id}`}
+                    type="text"
+                    value={file.description}
+                    onChange={(e) => onFileDescriptionChange(file.id, e.target.value)}
+                    placeholder="このファイルの説明を入力してください"
+                    className="text-sm"
+                  />
+                </div>
               </div>
             ))}
           </div>

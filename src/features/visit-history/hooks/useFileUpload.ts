@@ -17,8 +17,20 @@ export const useFileUpload = () => {
       name: file.name,
       size: file.size,
       file: file,
+      description: '', // 初期値は空文字
     }));
     setUploadedFiles(prev => [...prev, ...newFiles]);
+  };
+
+  // ファイルの説明を更新
+  const updateFileDescription = (fileId: string, description: string) => {
+    setUploadedFiles(prev => 
+      prev.map(file => 
+        file.id === fileId 
+          ? { ...file, description }
+          : file
+      )
+    );
   };
 
   // ファイル選択ボタンでのアップロード処理
@@ -79,5 +91,6 @@ export const useFileUpload = () => {
     handleDragLeave,
     handleDrop,
     resetFiles,
+    updateFileDescription, // ファイルの説明を更新するメソッド
   };
 };

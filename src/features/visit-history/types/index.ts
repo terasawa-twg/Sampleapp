@@ -14,6 +14,7 @@ export interface UploadedFile {
   name: string;
   size: number;
   file: File;
+  description: string; // ファイルごとの説明
 }
 
 // 訪問履歴フォームデータの型定義
@@ -24,7 +25,6 @@ export interface VisitFormData {
   rating: string;
   memo: string;
   uploadedFiles: UploadedFile[];
-  fileDescription: string;
 }
 
 // 送信用データの型定義
@@ -37,7 +37,6 @@ export interface CreateVisitData {
   rating: number;
   created_by: number;
   files: UploadedFile[];
-  file_description: string;
 }
 
 // API レスポンスの型定義

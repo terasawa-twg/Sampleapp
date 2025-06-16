@@ -21,13 +21,11 @@ export const VisitHistoryForm = () => {
     visitTime,
     rating,
     memo,
-    fileDescription,
     setVisitLocation,
     setVisitDate,
     setVisitTime,
     setRating,
     setMemo,
-    setFileDescription,
     getFormData,
     resetForm,
     validateForm,
@@ -44,6 +42,7 @@ export const VisitHistoryForm = () => {
     handleDragLeave,
     handleDrop,
     resetFiles,
+    updateFileDescription,
   } = useFileUpload();
 
   // フォーム送信処理
@@ -190,14 +189,13 @@ export const VisitHistoryForm = () => {
           <FileUpload
             uploadedFiles={uploadedFiles}
             isDragOver={isDragOver}
-            fileDescription={fileDescription}
-            onFileDescription={setFileDescription}
             onFileRemove={handleFileRemove}
             onFileInputChange={handleFileInputChange}
             onDragOver={handleDragOver}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
+            onFileDescriptionChange={updateFileDescription}
           />
 
           {/* ボタン */}

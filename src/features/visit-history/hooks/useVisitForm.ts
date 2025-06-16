@@ -8,7 +8,6 @@ export const useVisitForm = () => {
   const [visitTime, setVisitTime] = useState<string>('');
   const [rating, setRating] = useState<string>('');
   const [memo, setMemo] = useState<string>('');
-  const [fileDescription, setFileDescription] = useState<string>('');
 
   // フォームデータを取得
   const getFormData = (): VisitFormData => ({
@@ -18,7 +17,6 @@ export const useVisitForm = () => {
     rating,
     memo,
     uploadedFiles: [], // ファイルは別フックで管理
-    fileDescription,
   });
 
   // フォームをリセット
@@ -28,7 +26,6 @@ export const useVisitForm = () => {
     setVisitTime('');
     setRating('');
     setMemo('');
-    setFileDescription('');
   };
 
   // バリデーション（Sonner用にエラー情報を返す）
@@ -58,7 +55,6 @@ export const useVisitForm = () => {
       rating: formData.rating ? parseInt(formData.rating) : 0,
       created_by: 1, // TODO: 実際のユーザーIDに置き換える
       files: formData.uploadedFiles,
-      file_description: formData.fileDescription,
     };
   };
 
@@ -69,14 +65,12 @@ export const useVisitForm = () => {
     visitTime,
     rating,
     memo,
-    fileDescription,
     // セッター
     setVisitLocation,
     setVisitDate,
     setVisitTime,
     setRating,
     setMemo,
-    setFileDescription,
     // メソッド
     getFormData,
     resetForm,

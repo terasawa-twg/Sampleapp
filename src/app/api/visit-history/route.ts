@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
             data: {
               visit_id: visit.visit_id,
               file_path: file.filePath,
-              description: body.file_description || '',
+              description: file.description || '', // ファイルごとの説明
               created_by: body.created_by,
               updated_by: body.created_by,
             }

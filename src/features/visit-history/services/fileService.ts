@@ -1,4 +1,4 @@
-import type { UploadedFile } from '@/features/visit-history/types';
+import type { UploadedFile } from '@/features/visit-history/types/index';
 
 export interface FileUploadResult {
   fileName: string;
@@ -6,6 +6,7 @@ export interface FileUploadResult {
   originalName: string;
   size: number;
   mimeType: string;
+  description: string;
 }
 
 export const fileService = {
@@ -39,6 +40,7 @@ export const fileService = {
           originalName: uploadedFile.file.name,
           size: uploadedFile.file.size,
           mimeType: uploadedFile.file.type,
+          description: uploadedFile.description, // ファイルごとの説明
         });
       } catch (error) {
         console.error(`ファイル変換エラー: ${uploadedFile.name}`, error);
@@ -47,6 +49,41 @@ export const fileService = {
     }
     
     return results;
+  },
+
+  // ファイルごとの説明付きでアップロード
+  uploadFilesWithDescriptions: async (files: UploadedFile[]): Promise<FileUploadResult[]> => {
+    try {
+      const fileData = await Promise.all(
+        files.map(async (file) => ({
+          name: file.file.name,
+          size: file.file.size,
+          type: file.file.type,
+          description: file.description, // ファイルごとの説明
+          base64Data: await fileService.fileToBase64(file.file),
+        }))
+      );
+
+      const response = await fetch('/api/files/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          files: fileData,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`ファイルアップロードエラー: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.files;
+    } catch (error) {
+      console.error('ファイルアップロードエラー:', error);
+      throw error;
+    }
   },
 
   // APIにファイルを送信

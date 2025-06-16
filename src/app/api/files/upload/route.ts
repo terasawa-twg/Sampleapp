@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const uploadedFiles = [];
 
     for (const fileData of body.files) {
-      const { name, base64Data, size, type } = fileData;
+      const { name, base64Data, size, type, description } = fileData;
       
       // Base64データをバッファに変換
       const buffer = Buffer.from(base64Data, 'base64');
@@ -43,9 +43,10 @@ export async function POST(request: NextRequest) {
         originalName: name,
         size,
         mimeType: type,
+        description: description || '', // ファイルごとの説明
       });
       
-      console.log(`ファイル保存完了: ${fileName}`);
+      console.log(`ファイル保存完了: ${fileName} (説明: ${description || 'なし'})`);
     }
 
     return NextResponse.json({
