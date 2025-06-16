@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { FileText, AlertCircle, RefreshCw, Plus } from 'lucide-react';
+import { FileText, AlertCircle, RefreshCw, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 import Link from 'next/link';
 import { VisitCard } from '@/features/visits/components/VisitCard';
 import { VisitFiltersComponent } from '@/features/visits/components/VisitFilters';
@@ -17,13 +17,18 @@ interface ExtendedVisitFilters extends VisitFilters {
   minRating?: number;
 }
 
+// 並び替えの種類
+type SortOrder = 'asc' | 'desc';
+
 /**
  * 訪問履歴一覧ページのメインコンポーネント (改善版)
  * - 新規登録ボタンを右上に配置
  * - 評価フィルター対応
+ * - ID番号での昇順・降順並び替え機能追加
  */
 export const VisitsList = () => {
   const [filters, setFilters] = useState<ExtendedVisitFilters>({});
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc'); // 並び替え状態（デフォルトは降順）
   const { data: visitsData, isLoading, error, refetch } = useVisits(filters);
 
   // APIから返されたデータをVisitWithDetails形式に変換
@@ -56,8 +61,8 @@ export const VisitsList = () => {
     }));
   }, [visitsData]);
 
-  // クライアントサイドでのフィルタリング
-  const filteredVisits = useMemo(() => {
+  // クライアントサイドでのフィルタリングと並び替え
+  const filteredAndSortedVisits = useMemo(() => {
     if (!visits) return [];
     
     let result = visits;
@@ -84,12 +89,45 @@ export const VisitsList = () => {
       });
     }
     
+    // ID順での並び替え（常に適用）
+    result = [...result].sort((a, b) => {
+      if (sortOrder === 'asc') {
+        return a.id - b.id; // 昇順（小さい番号 → 大きい番号）
+      } else {
+        return b.id - a.id; // 降順（大きい番号 → 小さい番号）
+      }
+    });
+    
     return result;
-  }, [visits, filters.locationName, filters.minRating]);
+  }, [visits, filters.locationName, filters.minRating, sortOrder]);
 
   const handleFiltersChange = (newFilters: ExtendedVisitFilters) => {
     setFilters(newFilters);
   };
+
+  // 並び替えボタンのクリック処理（昇順・降順のトグル）
+  const handleSortToggle = () => {
+    setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
+  };
+
+  // 並び替えボタンのアイコンとテキストを決定
+  const getSortButtonContent = () => {
+    if (sortOrder === 'desc') {
+      return {
+        icon: <ArrowDown className="h-4 w-4" />,
+        text: 'ID降順',
+        variant: 'default' as const
+      };
+    } else {
+      return {
+        icon: <ArrowUp className="h-4 w-4" />,
+        text: 'ID昇順',
+        variant: 'default' as const
+      };
+    }
+  };
+
+  const sortButtonContent = getSortButtonContent();
 
   // ローディング状態
   if (isLoading) {
@@ -141,7 +179,7 @@ export const VisitsList = () => {
         </div>
         <div className="flex items-center gap-3">
           <Badge variant="secondary" className="text-sm">
-            {filteredVisits ? filteredVisits.length : 0} 件
+            {filteredAndSortedVisits ? filteredAndSortedVisits.length : 0} 件
           </Badge>
           {/* 新規登録ボタンを右上に配置 */}
           <Button asChild size="default" className="flex-shrink-0">
@@ -159,8 +197,31 @@ export const VisitsList = () => {
         onFiltersChange={handleFiltersChange}
       />
 
+      {/* 並び替えコントロール */}
+      {filteredAndSortedVisits && filteredAndSortedVisits.length > 0 && (
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>
+              {sortOrder === 'desc' 
+                ? 'ID番号 降順' 
+                : 'ID番号 昇順'
+              }
+            </span>
+          </div>
+          <Button
+            onClick={handleSortToggle}
+            variant={sortButtonContent.variant}
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            {sortButtonContent.icon}
+            {sortButtonContent.text}
+          </Button>
+        </div>
+      )}
+
       {/* 訪問履歴一覧 */}
-      {filteredVisits && filteredVisits.length === 0 ? (
+      {filteredAndSortedVisits && filteredAndSortedVisits.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <div className="text-6xl mb-6 opacity-50">
@@ -199,7 +260,7 @@ export const VisitsList = () => {
         <>
           {/* 訪問履歴カード一覧 */}
           <div className="grid gap-4">
-            {filteredVisits?.map((visit, index) => (
+            {filteredAndSortedVisits?.map((visit, index) => (
               <VisitCard
                 key={visit.id}
                 visit={visit}
@@ -209,16 +270,19 @@ export const VisitsList = () => {
           </div>
 
           {/* フッター統計 */}
-          {filteredVisits && filteredVisits.length > 0 && (
+          {filteredAndSortedVisits && filteredAndSortedVisits.length > 0 && (
             <div className="mt-8 text-center">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-full">
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  合計 <strong>{filteredVisits.length}</strong> 件の訪問履歴
+                  合計 <strong>{filteredAndSortedVisits.length}</strong> 件の訪問履歴
                   {filters.locationName || filters.startDate || filters.endDate || filters.minRating
                     ? ' (フィルター適用中)' 
                     : ''
                   }
+                  <span className="ml-2 text-primary">
+                    • {sortOrder === 'asc' ? 'ID昇順' : 'ID降順'}で表示
+                  </span>
                 </span>
               </div>
             </div>
