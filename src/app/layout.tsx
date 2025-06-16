@@ -33,7 +33,7 @@ export default function RootLayout({
       </head>
       <body>
         <TRPCReactProvider>{children}</TRPCReactProvider>
-        <Toaster />{}
+        <Toaster position="top-center" richColors={true}/> {/* トースト通知のコンポーネント */}
       </body>
     </html>
   );
