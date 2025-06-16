@@ -39,3 +39,18 @@ export interface CreateVisitData {
   files: UploadedFile[];
   file_description: string;
 }
+
+// API レスポンスの型定義
+export interface CreateVisitResponse {
+  success: boolean;
+  data: {
+    visit_id: number;
+    location_id: number;
+    visit_date: string;
+    notes: string;
+    rating: number;
+    created_by: number;
+    created_at: string;
+  };
+  message: string;
+}

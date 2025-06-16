@@ -1,6 +1,6 @@
-
 import { toast } from "sonner";
-import type { VisitLocation } from '@/features/visit-history/types/index';
+import type { VisitLocation, CreateVisitData } from '../types/index';
+import { visitHistoryService } from '../services/visitHistoryService';
 
 // ダミーデータの訪問先リスト
 export const mockVisitLocations: VisitLocation[] = [
@@ -46,20 +46,27 @@ export const mockVisitLocations: VisitLocation[] = [
   }
 ];
 
-// ダミーのAPI呼び出しサービス
-export const mockCreateVisit = {
-  mutateAsync: async (data: any) => {
-    console.log('送信データ:', data);
-    
-    // TODO: 実際のAPI呼び出し処理（後で実装）
-    
-    // 成功時のトースト
-    toast.success("訪問履歴が登録されました！", {
-      description: `${data.location_name} の訪問履歴を登録しました`,
-      duration: 4000,
-    });
-    
-    return Promise.resolve();
+// 実際のAPI呼び出しサービス
+export const createVisitService = {
+  mutateAsync: async (data: CreateVisitData) => {
+    try {
+      console.log('送信データ:', data);
+      
+      // 実際のAPI呼び出し
+      const result = await visitHistoryService.create(data);
+      
+      // 成功時のトースト
+      toast.success("訪問履歴が登録されました！", {
+        description: `${data.location_name} の訪問履歴を登録しました`,
+        duration: 4000,
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('登録エラー:', error);
+      // エラーを再スローしてフォーム側でキャッチ
+      throw error;
+    }
   },
-  isPending: false
+  isPending: false // TODO: 実際のloading状態を管理
 };

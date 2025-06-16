@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 import { useVisitForm } from '@/features/visit-history/hooks/useVisitForm';
 import { useFileUpload } from '@/features/visit-history/hooks/useFileUpload';
-import { mockVisitLocations, mockCreateVisit } from '@/features/visit-history/data/mockData';
+import { mockVisitLocations, createVisitService } from '@/features/visit-history/data/mockData';
 import { FileUpload } from './FileUpload';
 import type { VisitLocation } from '../types/index';
 
@@ -56,6 +56,11 @@ export const VisitHistoryForm = () => {
       toast.error("入力エラー", {
         description: validation.error,
         duration: 3000,
+        style: {
+          background: '#fef2f2',
+          borderColor: '#fca5a5',
+          color: '#dc2626'
+        }
       });
       return;
     }
@@ -67,8 +72,8 @@ export const VisitHistoryForm = () => {
       // 送信用データを作成
       const submitData = createSubmitData(formData, mockVisitLocations);
 
-      // ダミーのAPI呼び出し
-      await mockCreateVisit.mutateAsync(submitData);
+      // 実際のAPI呼び出し
+      await createVisitService.mutateAsync(submitData);
 
       // フォームをリセット
       resetForm();
@@ -207,10 +212,10 @@ export const VisitHistoryForm = () => {
             </Button>
             <Button
               type="submit"
-              disabled={mockCreateVisit.isPending}
+              disabled={createVisitService.isPending}
               className="px-8 py-2 bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
             >
-              {mockCreateVisit.isPending ? '登録中...' : '登録'}
+              {createVisitService.isPending ? '登録中...' : '登録'}
             </Button>
           </div>
         </form>
