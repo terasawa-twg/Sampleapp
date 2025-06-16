@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from "sonner";
 
 import { useVisitForm } from '@/features/visit-history/hooks/useVisitForm';
 import { useFileUpload } from '@/features/visit-history/hooks/useFileUpload';
@@ -50,9 +51,12 @@ export const VisitHistoryForm = () => {
     event.preventDefault();
     
     // バリデーション
-    const validationError = validateForm();
-    if (validationError) {
-      alert(validationError);
+    const validation = validateForm();
+    if (!validation.isValid) {
+      toast.error("入力エラー", {
+        description: validation.error,
+        duration: 3000,
+      });
       return;
     }
 
@@ -72,16 +76,27 @@ export const VisitHistoryForm = () => {
 
     } catch (error) {
       console.error('送信エラー:', error);
-      alert('エラーが発生しました');
+      toast.error("登録エラー", {
+        description: "訪問履歴の登録に失敗しました。もう一度お試しください。",
+        duration: 4000,
+      });
     }
   };
 
   // キャンセル処理
   const handleCancel = () => {
-    if (window.confirm('入力内容が失われますが、よろしいですか？')) {
-      resetForm();
-      resetFiles();
-    }
+    toast("入力内容をリセットしますか？", {
+      description: "入力した内容は失われます",
+      action: {
+        label: "リセット",
+        onClick: () => {
+          resetForm();
+          resetFiles();
+          toast.success("入力内容をリセットしました");
+        },
+      },
+      duration: 5000,
+    });
   };
 
   return (

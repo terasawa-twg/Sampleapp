@@ -1,3 +1,5 @@
+
+import { toast } from "sonner";
 import type { VisitLocation } from '@/features/visit-history/types/index';
 
 // ダミーデータの訪問先リスト
@@ -48,8 +50,15 @@ export const mockVisitLocations: VisitLocation[] = [
 export const mockCreateVisit = {
   mutateAsync: async (data: any) => {
     console.log('送信データ:', data);
+    
     // TODO: 実際のAPI呼び出し処理（後で実装）
-    alert('訪問履歴が登録されました！（現在はダミー処理）');
+    
+    // 成功時のトースト
+    toast.success("訪問履歴が登録されました！", {
+      description: `${data.location_name} の訪問履歴を登録しました`,
+      duration: 4000,
+    });
+    
     return Promise.resolve();
   },
   isPending: false

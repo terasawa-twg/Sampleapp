@@ -31,12 +31,12 @@ export const useVisitForm = () => {
     setFileDescription('');
   };
 
-  // バリデーション
-  const validateForm = (): string | null => {
-    if (!visitLocation) return '訪問先を選択してください';
-    if (!visitDate) return '訪問日を入力してください';
-    if (!visitTime) return '訪問時間を入力してください';
-    return null;
+  // バリデーション（Sonner用にエラー情報を返す）
+  const validateForm = (): { isValid: boolean; error?: string } => {
+    if (!visitLocation) return { isValid: false, error: '訪問先を選択してください' };
+    if (!visitDate) return { isValid: false, error: '訪問日を入力してください' };
+    if (!visitTime) return { isValid: false, error: '訪問時間を入力してください' };
+    return { isValid: true };
   };
 
   // 送信用データの作成
