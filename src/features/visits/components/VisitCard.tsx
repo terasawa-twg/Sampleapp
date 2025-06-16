@@ -45,7 +45,9 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
 
   const getRatingStars = (rating?: number) => {
     if (!rating) return null;
-    const stars = Math.floor(rating / 2);
+    // 既存データ(0-10)を1-5に変換、新データ(1-5)はそのまま使用
+    const normalizedRating = rating > 5 ? Math.ceil(rating / 2) : rating;
+    const stars = Math.floor(normalizedRating);
     return (
       <div className="flex items-center gap-1">
         <div className="flex">
@@ -62,7 +64,7 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
           ))}
         </div>
         <span className="text-xs text-muted-foreground ml-1">
-          {rating}/10
+          {normalizedRating}/5
         </span>
       </div>
     );

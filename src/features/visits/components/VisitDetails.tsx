@@ -187,7 +187,9 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
 
   const getRatingStars = (rating?: number) => {
     if (!rating) return null;
-    const stars = Math.floor(rating / 2);
+    // 既存データ(0-10)を1-5に変換、新データ(1-5)はそのまま使用
+    const normalizedRating = rating > 5 ? Math.ceil(rating / 2) : rating;
+    const stars = Math.floor(normalizedRating);
     return (
       <div className="flex items-center gap-1">
         <div className="flex">
@@ -204,7 +206,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
           ))}
         </div>
         <span className="text-sm text-muted-foreground ml-2">
-          {rating}/10
+          {normalizedRating}/5
         </span>
       </div>
     );
@@ -381,7 +383,6 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
             </CardContent>
           </Card>
 
-          {/* 訪問詳細 */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -426,7 +427,6 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
                 </>
               )}
 
-              {/* ユーザー情報 */}
               <Separator />
               <div className="flex items-center gap-3">
                 <User className="h-4 w-4 text-muted-foreground" />
@@ -447,7 +447,6 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
             </CardContent>
           </Card>
 
-          {/* メディア */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -491,7 +490,6 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
           </Card>
         </div>
 
-        {/* サイドバー（動的な訪問履歴） */}
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
@@ -502,7 +500,6 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {/* 過去の訪問履歴（DBから取得） */}
                 {locationVisits.map((pastVisit) => (
                   <div key={pastVisit.visit_id} className="p-3 bg-muted/50 rounded-lg">
                     <div className="font-medium text-sm text-muted-foreground">
@@ -518,8 +515,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
                     )}
                   </div>
                 ))}
-
-                {/* 現在の訪問 */}                
+                
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
                   <div className="font-medium text-sm">
                     {visitDate ? formatDate(visitDate).split(' ')[0] : '日時不明'}
@@ -531,8 +527,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
                     現在の訪問
                   </Badge>
                 </div>
-
-                {/* 訪問履歴が1件もない場合 */}                
+                
                 {locationVisits.length === 0 && (
                   <div className="text-center py-4 text-muted-foreground text-sm">
                     この場所への過去の訪問履歴はありません
