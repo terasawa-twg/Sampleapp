@@ -10,9 +10,10 @@ import { toast } from "sonner";
 
 import { useVisitForm } from '@/features/visit-history/hooks/useVisitForm';
 import { useFileUpload } from '@/features/visit-history/hooks/useFileUpload';
-import { mockVisitLocations, createVisitService } from '@/features/visit-history/data/mockData';
-import { FileUpload } from './FileUpload';
-import type { VisitLocation } from '../types/index';
+import { useLocations } from '@/features/visit-history/hooks/useLocations';
+import { createVisitService } from '@/features/visit-history/data/mockData';
+import { FileUpload } from '@/features/visit-history/components/FileUpload';
+import type { VisitLocation } from '@/features/visit-history/types/index';
 
 export const VisitHistoryForm = () => {
   const {
@@ -45,6 +46,13 @@ export const VisitHistoryForm = () => {
     updateFileDescription,
   } = useFileUpload();
 
+  // データベースから訪問先を取得
+  const {
+    locations: visitLocations,
+    isLoading: isLoadingLocations,
+    error: locationsError,
+  } = useLocations();
+
   // フォーム送信処理
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -69,7 +77,7 @@ export const VisitHistoryForm = () => {
       const formData = { ...getFormData(), uploadedFiles };
       
       // 送信用データを作成
-      const submitData = createSubmitData(formData, mockVisitLocations);
+      const submitData = createSubmitData(formData, visitLocations);
 
       // 実際のAPI呼び出し
       await createVisitService.mutateAsync(submitData);
@@ -122,7 +130,7 @@ export const VisitHistoryForm = () => {
                   <SelectValue placeholder="訪問先を選択" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockVisitLocations.map((location: VisitLocation) => (
+                  {visitLocations.map((location: VisitLocation) => (
                     <SelectItem key={location.location_id} value={location.location_id.toString()}>
                       {location.name}
                     </SelectItem>
