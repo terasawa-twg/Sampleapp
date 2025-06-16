@@ -12,11 +12,13 @@ import { cn } from '@/lib/utils';
 
 interface VisitCardProps {
   visit: VisitWithDetails;
-  index: number; // 配列のインデックス（今は使用しない）
+  index: number;
 }
 
 /**
- * 訪問履歴カードコンポーネント (shadcn/ui版)
+ * 訪問履歴カードコンポーネント (表示専用版)
+ * - 詳細表示・削除ボタン
+ * - 編集ボタンは削除（管理画面で操作）
  * - DB上の実際のvisit_idを#番号として表示
  */
 export const VisitCard = ({ visit, index }: VisitCardProps) => {
@@ -31,7 +33,6 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
       }
     }
   };
-
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('ja-JP', {
       year: 'numeric',
@@ -70,7 +71,7 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
+    <Card className="group hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -142,7 +143,7 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
 
       <CardFooter className="pt-3 border-t">
         <div className="flex justify-between items-center w-full">
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="default" size="sm" className="bg-amber-600 hover:bg-amber-700">
             <Link href={`/visits/${visit.id}`}>
               <Eye className="h-4 w-4 mr-1" />
               詳細を見る

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Filter, X, ChevronDown, ChevronRight, Star } from 'lucide-react';
+import { Filter, X, ChevronDown, ChevronRight, Star } from 'lucide-react';
 import type { VisitFilters } from '@/features/visits/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,20 +29,12 @@ interface VisitFiltersProps {
 }
 
 /**
- * 訪問履歴の検索・フィルターコンポーネント (改善版)
- * - 新規登録ボタンを削除（親コンポーネントに移動）
- * - 使用しないフィルターを非表示
- * - 評価フィルター（1-5星）を実装
+ * 訪問履歴の詳細フィルターコンポーネント (簡略版)
+ * - 訪問先名検索を削除（管理画面からの遷移を前提）
+ * - 評価フィルター（1-5星）と日付フィルターは維持
  */
 export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFiltersProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-
-  const handleLocationNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onFiltersChange({
-      ...filters,
-      locationName: e.target.value || undefined,
-    });
-  };
 
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onFiltersChange({
@@ -91,37 +83,17 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
     </div>
   );
 
-  // アクティブなフィルター数を計算
-  const activeFiltersCount = Object.values(filters).filter(Boolean).length;
+  // アクティブなフィルター数を計算（locationNameは除外）
+  const activeFiltersCount = [
+    filters.minRating,
+    filters.startDate,
+    filters.endDate
+  ].filter(Boolean).length;
 
   return (
     <Card className="mb-6">
       <CardContent className="p-6">
-        {/* メイン検索バー（新規登録ボタンを削除） */}
-        <div className="flex gap-3 items-center mb-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="訪問先名で検索..."
-              value={filters.locationName || ''}
-              onChange={handleLocationNameChange}
-              className="pl-10"
-            />
-            {filters.locationName && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-                onClick={() => onFiltersChange({ ...filters, locationName: undefined })}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* フィルター展開ボタン */}
+        {/* 詳細フィルター展開ボタン */}
         <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
           <CollapsibleTrigger asChild>
             <div className="w-full flex justify-between items-center p-0 h-auto cursor-pointer">
@@ -155,8 +127,8 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
 
           <CollapsibleContent className="mt-4">
             <div className="space-y-4 pt-4 border-t">
-              {/* 評価フィルターのみ表示（市区町村・カテゴリーは非表示） */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 評価と日付フィルター */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* 評価フィルター */}
                 <div className="space-y-2">
                   <Label htmlFor="rating-filter" className="text-sm font-medium">
@@ -204,10 +176,8 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
 
-              {/* 日付フィルター */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 開始日フィルター */}
                 <div className="space-y-2">
                   <Label htmlFor="start-date" className="text-sm font-medium">
                     開始日
@@ -219,6 +189,8 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
                     onChange={handleStartDateChange}
                   />
                 </div>
+
+                {/* 終了日フィルター */}
                 <div className="space-y-2">
                   <Label htmlFor="end-date" className="text-sm font-medium">
                     終了日
@@ -236,17 +208,7 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
               {activeFiltersCount > 0 && (
                 <div className="flex flex-wrap gap-2 pt-2">
                   <span className="text-sm text-muted-foreground">適用中:</span>
-                  {filters.locationName && (
-                    <Badge variant="secondary" className="gap-1">
-                      検索: {filters.locationName}
-                      <span
-                        className="ml-1 cursor-pointer hover:bg-secondary-foreground/10 rounded-full w-3 h-3 flex items-center justify-center"
-                        onClick={() => onFiltersChange({ ...filters, locationName: undefined })}
-                      >
-                        <X className="h-3 w-3" />
-                      </span>
-                    </Badge>
-                  )}
+                  
                   {filters.minRating && (
                     <Badge variant="secondary" className="gap-1">
                       <RatingStars rating={filters.minRating} />
@@ -259,6 +221,7 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
                       </span>
                     </Badge>
                   )}
+                  
                   {filters.startDate && (
                     <Badge variant="secondary" className="gap-1">
                       開始: {formatDateForInput(filters.startDate)}
@@ -270,6 +233,7 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
                       </span>
                     </Badge>
                   )}
+                  
                   {filters.endDate && (
                     <Badge variant="secondary" className="gap-1">
                       終了: {formatDateForInput(filters.endDate)}

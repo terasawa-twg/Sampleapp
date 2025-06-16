@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useRef, useEffect, useState } from 'react';
 import { 
   ArrowLeft, 
-  Edit, 
-  Trash2, 
+  Trash2,
   MapPin, 
   Calendar, 
   User, 
@@ -137,7 +136,7 @@ const SimpleMap = ({
     <div>
       <div 
         ref={mapRef} 
-        style={{ width: '100%', height: '240px' }} // 高さを少し増やしてピンが見やすく
+        style={{ width: '100%', height: '240px' }}
         className="rounded-lg border shadow-sm bg-gray-100"
       />
       <div className="flex items-center justify-between mt-2">
@@ -271,16 +270,11 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button asChild variant="outline">
-            <Link href={`/visits/${visitId}/edit`}>
-              <Edit className="h-4 w-4 mr-2" />
-              編集
-            </Link>
-          </Button>
           <Button 
             onClick={handleDelete}
             disabled={deleteVisit.isPending}
             variant="destructive"
+            size="sm"
           >
             {deleteVisit.isPending ? (
               <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -464,7 +458,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
                   <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
                   <p className="text-muted-foreground font-medium">アップロードされたメディアはありません</p>
                   <p className="text-muted-foreground/70 text-sm mt-1">
-                    写真や動画をアップロードして訪問記録を充実させましょう
+                    メディアが登録されていません
                   </p>
                 </div>
               ) : (
