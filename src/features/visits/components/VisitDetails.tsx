@@ -16,7 +16,8 @@ import {
   FileText,
   Camera,
   Clock,
-  RefreshCw
+  RefreshCw,
+  ExternalLink
 } from 'lucide-react';
 import { useVisitDetails } from '@/features/visits/hooks/useVisitDetails';
 import { useDeleteVisit } from '@/features/visits/hooks/useVisits';
@@ -496,34 +497,59 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
                 訪問履歴
+                {locationVisits.length > 0 && (
+                  <Badge variant="outline" className="text-xs">
+                    {locationVisits.length + 1}件
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
+                {/* 🔗 過去の訪問履歴をクリック可能なリンクに変更 */}
                 {locationVisits.map((pastVisit) => (
-                  <div key={pastVisit.visit_id} className="p-3 bg-muted/50 rounded-lg">
-                    <div className="font-medium text-sm text-muted-foreground">
-                      {formatDate(pastVisit.visit_date).split(' ')[0]}
-                    </div>
-                    <div className="text-xs text-muted-foreground/70">
-                      {formatDate(pastVisit.visit_date).split(' ').slice(1).join(' ')}
-                    </div>
-                    {pastVisit.notes && (
-                      <div className="text-xs text-muted-foreground/70 mt-1 line-clamp-1">
-                        {pastVisit.notes}
+                  <Link 
+                    key={pastVisit.visit_id} 
+                    href={`/visits/${pastVisit.visit_id}`}
+                    className="block p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors group cursor-pointer border hover:border-muted-foreground/20"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm text-muted-foreground font-mono">
+                            #{pastVisit.visit_id}
+                          </span>
+                          <div className="font-medium text-sm text-muted-foreground">
+                            {formatDate(pastVisit.visit_date).split(' ')[0]}
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground/70 mt-0.5">
+                          {formatDate(pastVisit.visit_date).split(' ').slice(1).join(' ')}
+                        </div>
+                        {pastVisit.notes && (
+                          <div className="text-xs text-muted-foreground/70 mt-1 line-clamp-2 leading-relaxed">
+                            {pastVisit.notes}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                      {/* ホバー時に外部リンクアイコンを表示 */}
+                      <ExternalLink className="h-3 w-3 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1 ml-2" />
+                    </div>
+                  </Link>
                 ))}
                 
+                {/* 現在の訪問（リンクなし） */}
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
-                  <div className="font-medium text-sm">
-                    {visitDate ? formatDate(visitDate).split(' ')[0] : '日時不明'}
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm font-mono">#{visitId}</span>
+                    <div className="font-medium text-sm">
+                      {visitDate ? formatDate(visitDate).split(' ')[0] : '日時不明'}
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground mt-0.5">
                     {visitDate ? formatDate(visitDate).split(' ').slice(1).join(' ') : ''}
                   </div>
-                  <Badge variant="secondary" className="mt-1">
+                  <Badge variant="secondary" className="mt-2 text-xs">
                     現在の訪問
                   </Badge>
                 </div>
