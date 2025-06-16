@@ -19,7 +19,7 @@ export { VisitFiltersComponent } from './components/VisitFilters';
 
 // あなたが作成したフック
 export { useVisits, useDeleteVisit } from './hooks/useVisits';
-export { useVisitDetails, useVisitsByLocation } from './hooks/useVisitDetails';
+export { useVisitDetails } from './hooks/useVisitDetails';
 
 // 他の開発者が作成予定のフック
 // export { useCreateVisit } from './hooks/useCreateVisit';

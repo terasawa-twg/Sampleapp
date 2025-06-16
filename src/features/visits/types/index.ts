@@ -64,4 +64,5 @@ export interface VisitFilters {
   startDate?: Date;
   endDate?: Date;
   userId?: number;
+  minRating?: number; // 追加
 }

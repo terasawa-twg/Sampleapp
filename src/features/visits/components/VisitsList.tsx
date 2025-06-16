@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { FileText, AlertCircle, RefreshCw, Plus } from 'lucide-react';
+import Link from 'next/link';
 import { VisitCard } from '@/features/visits/components/VisitCard';
 import { VisitFiltersComponent } from '@/features/visits/components/VisitFilters';
 import { useVisits } from '@/features/visits/hooks/useVisits';
@@ -11,11 +12,18 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 
+// 拡張されたフィルター型（評価フィルター追加）
+interface ExtendedVisitFilters extends VisitFilters {
+  minRating?: number;
+}
+
 /**
- * 訪問履歴一覧ページのメインコンポーネント (shadcn/ui版)
+ * 訪問履歴一覧ページのメインコンポーネント (改善版)
+ * - 新規登録ボタンを右上に配置
+ * - 評価フィルター対応
  */
 export const VisitsList = () => {
-  const [filters, setFilters] = useState<VisitFilters>({});
+  const [filters, setFilters] = useState<ExtendedVisitFilters>({});
   const { data: visitsData, isLoading, error, refetch } = useVisits(filters);
 
   // APIから返されたデータをVisitWithDetails形式に変換
@@ -48,20 +56,38 @@ export const VisitsList = () => {
     }));
   }, [visitsData]);
 
-  // locationNameでのクライアントサイドフィルタリング
+  // クライアントサイドでのフィルタリング
   const filteredVisits = useMemo(() => {
     if (!visits) return [];
     
+    let result = visits;
+    
+    // 場所名でのフィルタリング
     if (filters.locationName) {
-      return visits.filter(visit => 
+      result = result.filter(visit => 
         visit.location.name.toLowerCase().includes(filters.locationName!.toLowerCase())
       );
     }
     
-    return visits;
-  }, [visits, filters.locationName]);
+    // 評価でのフィルタリング（1-5の範囲で）
+    if (filters.minRating) {
+      result = result.filter(visit => {
+        if (!visit.rating) return false;
+        
+        // データが既に1-5の範囲の場合はそのまま使用、10段階の場合は変換
+        const normalizedRating = visit.rating <= 5 ? visit.rating : Math.ceil(visit.rating / 2);
+        
+        // デバッグ用ログ
+        console.log(`🔍 評価フィルター: 元の評価=${visit.rating}, 正規化後=${normalizedRating}, 最小条件=${filters.minRating}, 結果=${normalizedRating >= filters.minRating!}`);
+        
+        return normalizedRating >= filters.minRating!;
+      });
+    }
+    
+    return result;
+  }, [visits, filters.locationName, filters.minRating]);
 
-  const handleFiltersChange = (newFilters: VisitFilters) => {
+  const handleFiltersChange = (newFilters: ExtendedVisitFilters) => {
     setFilters(newFilters);
   };
 
@@ -105,7 +131,7 @@ export const VisitsList = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      {/* ヘッダー */}
+      {/* ヘッダー（新規登録ボタンを右上に配置） */}
       <div className="flex items-center justify-between mb-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight">訪問履歴一覧</h1>
@@ -113,10 +139,17 @@ export const VisitsList = () => {
             これまでの訪問記録を確認・管理できます
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Badge variant="secondary" className="text-sm">
             {filteredVisits ? filteredVisits.length : 0} 件
           </Badge>
+          {/* 新規登録ボタンを右上に配置 */}
+          <Button asChild size="default" className="flex-shrink-0">
+            <Link href="/visits/new">
+              <Plus className="h-4 w-4 mr-2" />
+              新規登録
+            </Link>
+          </Button>
         </div>
       </div>
 
@@ -134,18 +167,18 @@ export const VisitsList = () => {
               <FileText className="h-16 w-16 mx-auto text-muted-foreground" />
             </div>
             <h3 className="text-xl font-semibold mb-2">
-              {filters.locationName || filters.startDate || filters.endDate
+              {filters.locationName || filters.startDate || filters.endDate || filters.minRating
                 ? '検索条件に一致する訪問履歴がありません'
                 : '訪問履歴がありません'
               }
             </h3>
             <p className="text-muted-foreground text-center max-w-md mb-6">
-              {filters.locationName || filters.startDate || filters.endDate
+              {filters.locationName || filters.startDate || filters.endDate || filters.minRating
                 ? '検索条件を変更するか、フィルターをクリアして再度お試しください。'
                 : '最初の訪問履歴を登録して、記録を開始しましょう。'
               }
             </p>
-            {(filters.locationName || filters.startDate || filters.endDate) ? (
+            {(filters.locationName || filters.startDate || filters.endDate || filters.minRating) ? (
               <Button 
                 onClick={() => setFilters({})}
                 variant="outline"
@@ -154,10 +187,10 @@ export const VisitsList = () => {
               </Button>
             ) : (
               <Button asChild>
-                <a href="/visits/new">
+                <Link href="/visits/new">
                   <Plus className="h-4 w-4 mr-2" />
                   最初の訪問履歴を登録する
-                </a>
+                </Link>
               </Button>
             )}
           </CardContent>
@@ -182,7 +215,7 @@ export const VisitsList = () => {
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
                   合計 <strong>{filteredVisits.length}</strong> 件の訪問履歴
-                  {filters.locationName || filters.startDate || filters.endDate 
+                  {filters.locationName || filters.startDate || filters.endDate || filters.minRating
                     ? ' (フィルター適用中)' 
                     : ''
                   }

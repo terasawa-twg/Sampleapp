@@ -17,7 +17,6 @@ interface VisitCardProps {
 
 /**
  * 訪問履歴カードコンポーネント (shadcn/ui版)
- * - shadcn/uiコンポーネントを使用した美しいカード表示
  * - DB上の実際のvisit_idを#番号として表示
  */
 export const VisitCard = ({ visit, index }: VisitCardProps) => {
@@ -45,8 +44,8 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
 
   const getRatingStars = (rating?: number) => {
     if (!rating) return null;
-    // 既存データ(0-10)を1-5に変換、新データ(1-5)はそのまま使用
-    const normalizedRating = rating > 5 ? Math.ceil(rating / 2) : rating;
+    // データが既に1-5の範囲の場合はそのまま使用、10段階の場合は変換
+    const normalizedRating = rating <= 5 ? rating : Math.ceil(rating / 2);
     const stars = Math.floor(normalizedRating);
     return (
       <div className="flex items-center gap-1">

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { Search, Filter, Plus, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { Search, Filter, X, ChevronDown, ChevronRight, Star } from 'lucide-react';
 import type { VisitFilters } from '@/features/visits/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,14 +16,23 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
+
+// 拡張されたフィルター型（評価フィルター追加）
+interface ExtendedVisitFilters extends VisitFilters {
+  minRating?: number;
+}
 
 interface VisitFiltersProps {
-  onFiltersChange: (filters: VisitFilters) => void;
-  filters: VisitFilters;
+  onFiltersChange: (filters: ExtendedVisitFilters) => void;
+  filters: ExtendedVisitFilters;
 }
 
 /**
- * 訪問履歴の検索・フィルターコンポーネント (shadcn/ui版)
+ * 訪問履歴の検索・フィルターコンポーネント (改善版)
+ * - 新規登録ボタンを削除（親コンポーネントに移動）
+ * - 使用しないフィルターを非表示
+ * - 評価フィルター（1-5星）を実装
  */
 export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFiltersProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -50,6 +58,13 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
     });
   };
 
+  const handleRatingChange = (value: string) => {
+    onFiltersChange({
+      ...filters,
+      minRating: value === 'all' ? undefined : parseInt(value),
+    });
+  };
+
   const clearFilters = () => {
     onFiltersChange({});
   };
@@ -59,13 +74,30 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
     return date.toISOString().split('T')[0];
   };
 
+  // 星評価の表示コンポーネント
+  const RatingStars = ({ rating }: { rating: number }) => (
+    <div className="flex items-center gap-1">
+      {[...Array(5)].map((_, i) => (
+        <Star
+          key={i}
+          className={cn(
+            "h-3 w-3",
+            i < rating 
+              ? "fill-yellow-400 text-yellow-400" 
+              : "text-muted-foreground"
+          )}
+        />
+      ))}
+    </div>
+  );
+
   // アクティブなフィルター数を計算
   const activeFiltersCount = Object.values(filters).filter(Boolean).length;
 
   return (
     <Card className="mb-6">
       <CardContent className="p-6">
-        {/* メイン検索バー */}
+        {/* メイン検索バー（新規登録ボタンを削除） */}
         <div className="flex gap-3 items-center mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -87,19 +119,12 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
               </Button>
             )}
           </div>
-          
-          <Button asChild className="flex-shrink-0">
-            <Link href="/visits/new">
-              <Plus className="h-4 w-4 mr-2" />
-              新規登録
-            </Link>
-          </Button>
         </div>
 
         {/* フィルター展開ボタン */}
         <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" className="w-full justify-between p-0 h-auto">
+            <div className="w-full flex justify-between items-center p-0 h-auto cursor-pointer">
               <div className="flex items-center gap-2">
                 {isExpanded ? (
                   <ChevronDown className="h-4 w-4" />
@@ -115,65 +140,67 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
                 )}
               </div>
               {activeFiltersCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <span
+                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
                     clearFilters();
                   }}
-                  className="text-xs text-muted-foreground hover:text-foreground"
                 >
                   クリア
-                </Button>
+                </span>
               )}
-            </Button>
+            </div>
           </CollapsibleTrigger>
 
           <CollapsibleContent className="mt-4">
             <div className="space-y-4 pt-4 border-t">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* 市区町村フィルター（将来実装） */}
-                <div className="space-y-2">
-                  <Label htmlFor="city-filter" className="text-sm font-medium">
-                    市区町村
-                  </Label>
-                  <Select disabled>
-                    <SelectTrigger id="city-filter">
-                      <SelectValue placeholder="全て（実装予定）" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">全て（実装予定）</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* 自由項目（将来実装） */}
-                <div className="space-y-2">
-                  <Label htmlFor="category-filter" className="text-sm font-medium">
-                    カテゴリー
-                  </Label>
-                  <Select disabled>
-                    <SelectTrigger id="category-filter">
-                      <SelectValue placeholder="選択してください（実装予定）" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">選択してください（実装予定）</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* 評価フィルター（将来実装） */}
+              {/* 評価フィルターのみ表示（市区町村・カテゴリーは非表示） */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 評価フィルター */}
                 <div className="space-y-2">
                   <Label htmlFor="rating-filter" className="text-sm font-medium">
                     評価
                   </Label>
-                  <Select disabled>
+                  <Select 
+                    value={filters.minRating?.toString() || 'all'} 
+                    onValueChange={handleRatingChange}
+                  >
                     <SelectTrigger id="rating-filter">
-                      <SelectValue placeholder="全て（実装予定）" />
+                      <SelectValue placeholder="すべての評価" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">全て（実装予定）</SelectItem>
+                      <SelectItem value="all">すべての評価</SelectItem>
+                      <SelectItem value="5">
+                        <div className="flex items-center gap-2">
+                          <RatingStars rating={5} />
+                          <span className="text-xs text-muted-foreground">のみ</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="4">
+                        <div className="flex items-center gap-2">
+                          <RatingStars rating={4} />
+                          <span className="text-xs text-muted-foreground">以上</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="3">
+                        <div className="flex items-center gap-2">
+                          <RatingStars rating={3} />
+                          <span className="text-xs text-muted-foreground">以上</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="2">
+                        <div className="flex items-center gap-2">
+                          <RatingStars rating={2} />
+                          <span className="text-xs text-muted-foreground">以上</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="1">
+                        <div className="flex items-center gap-2">
+                          <RatingStars rating={1} />
+                          <span className="text-xs text-muted-foreground">以上</span>
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -212,40 +239,46 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
                   {filters.locationName && (
                     <Badge variant="secondary" className="gap-1">
                       検索: {filters.locationName}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto w-auto p-0 ml-1"
+                      <span
+                        className="ml-1 cursor-pointer hover:bg-secondary-foreground/10 rounded-full w-3 h-3 flex items-center justify-center"
                         onClick={() => onFiltersChange({ ...filters, locationName: undefined })}
                       >
                         <X className="h-3 w-3" />
-                      </Button>
+                      </span>
+                    </Badge>
+                  )}
+                  {filters.minRating && (
+                    <Badge variant="secondary" className="gap-1">
+                      <RatingStars rating={filters.minRating} />
+                      <span className="text-xs">以上</span>
+                      <span
+                        className="ml-1 cursor-pointer hover:bg-secondary-foreground/10 rounded-full w-3 h-3 flex items-center justify-center"
+                        onClick={() => onFiltersChange({ ...filters, minRating: undefined })}
+                      >
+                        <X className="h-3 w-3" />
+                      </span>
                     </Badge>
                   )}
                   {filters.startDate && (
                     <Badge variant="secondary" className="gap-1">
                       開始: {formatDateForInput(filters.startDate)}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto w-auto p-0 ml-1"
+                      <span
+                        className="ml-1 cursor-pointer hover:bg-secondary-foreground/10 rounded-full w-3 h-3 flex items-center justify-center"
                         onClick={() => onFiltersChange({ ...filters, startDate: undefined })}
                       >
                         <X className="h-3 w-3" />
-                      </Button>
+                      </span>
                     </Badge>
                   )}
                   {filters.endDate && (
                     <Badge variant="secondary" className="gap-1">
                       終了: {formatDateForInput(filters.endDate)}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto w-auto p-0 ml-1"
+                      <span
+                        className="ml-1 cursor-pointer hover:bg-secondary-foreground/10 rounded-full w-3 h-3 flex items-center justify-center"
                         onClick={() => onFiltersChange({ ...filters, endDate: undefined })}
                       >
                         <X className="h-3 w-3" />
-                      </Button>
+                      </span>
                     </Badge>
                   )}
                 </div>
