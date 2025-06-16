@@ -1,10 +1,21 @@
-import type { CreateVisitData } from '../types';
+import type { CreateVisitData } from '@/features/visit-history/types';
+import { fileService, type FileUploadResult } from '@/features/visit-history/services/fileService';
 
 // 実際のAPI呼び出しサービス
 export const visitHistoryService = {
   // 訪問履歴を作成
   create: async (data: CreateVisitData) => {
     try {
+      let uploadedFiles: FileUploadResult[] = [];
+
+      // ファイルがある場合は先にアップロード
+      if (data.files && data.files.length > 0) {
+        console.log(`${data.files.length}個のファイルをアップロード中...`);
+        uploadedFiles = await fileService.uploadFiles(data.files, data.file_description);
+        console.log('ファイルアップロード完了:', uploadedFiles);
+      }
+
+      // 訪問履歴をデータベースに保存
       const response = await fetch('/api/visit-history', {
         method: 'POST',
         headers: {
@@ -16,6 +27,8 @@ export const visitHistoryService = {
           notes: data.notes,
           rating: data.rating,
           created_by: data.created_by,
+          files: uploadedFiles,
+          file_description: data.file_description,
         }),
       });
 

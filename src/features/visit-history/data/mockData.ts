@@ -55,9 +55,13 @@ export const createVisitService = {
       // 実際のAPI呼び出し
       const result = await visitHistoryService.create(data);
       
-      // 成功時のトースト
+      // 成功時のトースト（ファイル数も含める）
+      const fileMessage = data.files.length > 0 
+        ? ` (${data.files.length}個のファイル含む)` 
+        : '';
+      
       toast.success("訪問履歴が登録されました！", {
-        description: `${data.location_name} の訪問履歴を登録しました`,
+        description: `${data.location_name} の訪問履歴を登録しました${fileMessage}`,
         duration: 4000,
       });
       

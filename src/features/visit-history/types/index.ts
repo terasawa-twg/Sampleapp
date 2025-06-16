@@ -46,11 +46,22 @@ export interface CreateVisitResponse {
   data: {
     visit_id: number;
     location_id: number;
+    location_name: string;
     visit_date: string;
     notes: string;
     rating: number;
     created_by: number;
     created_at: string;
+    photos_count: number;
   };
   message: string;
+}
+
+// ファイルアップロード結果の型定義
+export interface FileUploadResult {
+  fileName: string;
+  filePath: string;
+  originalName: string;
+  size: number;
+  mimeType: string;
 }
