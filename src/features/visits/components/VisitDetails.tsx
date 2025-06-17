@@ -43,7 +43,21 @@ const SimpleMap = ({
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if ((window as any).geolonia && (window as any).geolonia.Map && mapRef.current) {
+      // ESLint対応：windowオブジェクトのgeoloniaプロパティにアクセス
+      const geoloniaWindow = window as unknown as { 
+        geolonia?: { 
+          Map: new (options: Record<string, unknown>) => {
+            on: (event: string, callback: (error?: Error) => void) => void;
+          };
+          Marker: new (options: Record<string, unknown>) => {
+            setLngLat: (coords: [number, number]) => {
+              addTo: (map: unknown) => void;
+            };
+          };
+        }; 
+      };
+      
+      if (geoloniaWindow.geolonia?.Map && mapRef.current) {
         try {
           // 環境変数からAPIキーを取得
           const apiKey = process.env.NEXT_PUBLIC_GEOLONIA_API_KEY;
@@ -60,7 +74,7 @@ const SimpleMap = ({
           const centerLng = longitude || 139.7671;
           const centerLat = latitude || 35.6812;
           
-          const map = new (window as any).geolonia.Map({
+          const map = new geoloniaWindow.geolonia.Map({
             container: mapRef.current,
             center: [centerLng, centerLat],
             zoom: 16,
@@ -78,7 +92,7 @@ const SimpleMap = ({
             setMapStatus('地図表示成功');
             
             // ピンを追加（固定マーカー）
-            if (latitude && longitude) {
+            if (latitude && longitude && geoloniaWindow.geolonia?.Marker) {
               // カスタムマーカー要素を作成
               const markerElement = document.createElement('div');
               markerElement.className = 'custom-marker';
@@ -104,19 +118,18 @@ const SimpleMap = ({
               `;
               
               // マーカーを地図に追加
-              new (window as any).geolonia.Marker({
+              const marker = new geoloniaWindow.geolonia.Marker({
                 element: markerElement,
                 draggable: false, // ドラッグ無効でピンを固定
-              })
-              .setLngLat([longitude, latitude])
-              .addTo(map);
+              });
+              marker.setLngLat([longitude, latitude]).addTo(map);
               
               console.log(`📍 ピン追加完了: #${visitId} at [${longitude}, ${latitude}]`);
             }
           });
           
-          map.on('error', (e: any) => {
-            console.error('地図エラー:', e);
+          map.on('error', (error?: Error) => {
+            console.error('地図エラー:', error);
             setMapStatus('地図表示エラー');
           });
           

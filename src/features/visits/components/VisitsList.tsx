@@ -14,6 +14,27 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
+// tRPCから返されるデータの型定義（ESLint対応）
+interface RawVisitData {
+  visit_id: number;
+  visit_date: string | Date;
+  notes?: string;
+  rating?: number;
+  location_id: number;
+  created_by: number;
+  locations?: {
+    name: string;
+    address?: string;
+    description?: string;
+    latitude?: number;
+    longitude?: number;
+  };
+  users_visits_created_byTousers?: {
+    username: string;
+  };
+  visit_photos?: Array<unknown>;
+}
+
 // 拡張されたフィルター型（評価フィルター追加）
 interface ExtendedVisitFilters extends VisitFilters {
   minRating?: number;
@@ -139,11 +160,11 @@ export const VisitsList = () => {
     }
   }, [locationName, filters.locationName]);
 
-  // APIから返されたデータをVisitWithDetails形式に変換
+  // APIから返されたデータをVisitWithDetails形式に変換（ESLint対応）
   const visits = useMemo(() => {
     if (!visitsData) return [];
     
-    return visitsData.map((visit: any): VisitWithDetails => ({
+    return (visitsData as RawVisitData[]).map((visit): VisitWithDetails => ({
       id: visit.visit_id,
       visitDate: new Date(visit.visit_date),
       memo: visit.notes,
