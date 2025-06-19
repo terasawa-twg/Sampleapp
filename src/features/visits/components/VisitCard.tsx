@@ -13,15 +13,22 @@ import { cn } from '@/lib/utils';
 interface VisitCardProps {
   visit: VisitWithDetails;
   index: number;
+  variant?: 'compact' | 'full';
+  showDelete?: boolean;
 }
 
 /**
- * 訪問履歴カードコンポーネント (表示専用版)
- * - 詳細表示・削除ボタン
- * - 編集ボタンは削除（管理画面で操作）
- * - DB上の実際のvisit_idを#番号として表示
+ * 訪問履歴カードコンポーネント (コンパクト/フル対応版)
+ * - variant="compact": 1行レイアウト（VisitsList用）
+ * - variant="full": フルカードレイアウト（グリッド用）
+ * - showDelete: 削除ボタンの表示制御
  */
-export const VisitCard = ({ visit, index }: VisitCardProps) => {
+export const VisitCard = ({ 
+  visit, 
+  index, 
+  variant = 'full',
+  showDelete = true 
+}: VisitCardProps) => {
   const deleteVisit = useDeleteVisit();
 
   const handleDelete = async () => {
@@ -33,6 +40,7 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
       }
     }
   };
+
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('ja-JP', {
       year: 'numeric',
@@ -45,17 +53,18 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
 
   const getRatingStars = (rating?: number) => {
     if (!rating) return null;
-    // データが既に1-5の範囲の場合はそのまま使用、10段階の場合は変換
     const normalizedRating = rating <= 5 ? rating : Math.ceil(rating / 2);
     const stars = Math.floor(normalizedRating);
+    const iconSize = variant === 'compact' ? 'h-3 w-3' : 'h-3 w-3';
+    
     return (
       <div className="flex items-center gap-1">
         <div className="flex">
-          {[...Array(5)].map((_, i) => (
+          {Array.from({length: 5}, (_, i) => (
             <Star
               key={i}
               className={cn(
-                "h-3 w-3",
+                iconSize,
                 i < stars 
                   ? "fill-yellow-400 text-yellow-400" 
                   : "text-muted-foreground"
@@ -63,19 +72,94 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
             />
           ))}
         </div>
-        <span className="text-xs text-muted-foreground ml-1">
-          {normalizedRating}/5
-        </span>
+        {variant === 'full' && (
+          <span className="text-xs text-muted-foreground ml-1">
+            {normalizedRating}/5
+          </span>
+        )}
       </div>
     );
   };
 
+  // 🆕 コンパクトバージョン（現在のCompactVisitCardと同じデザイン）
+  if (variant === 'compact') {
+    return (
+      <Card className="hover:shadow-md transition-shadow">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            {/* 左側：番号、場所名、基本情報 */}
+            <div className="flex items-center gap-4 flex-1">
+              {/* 番号 */}
+              <div className="flex-shrink-0">
+                <Badge variant="outline" className="font-mono text-sm w-8 h-8 rounded-full flex items-center justify-center">
+                  {index}
+                </Badge>
+              </div>
+              
+              {/* 基本情報 */}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-medium text-base text-foreground mb-1 truncate">
+                  {visit.location.name}
+                </h3>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    <span>{formatDate(visit.visitDate)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    <span>{visit.user?.name ?? 'ユーザー不明'}</span>
+                  </div>
+                  {visit.rating && (
+                    <div className="flex items-center gap-1">
+                      {getRatingStars(visit.rating)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 右側：アバター、詳細ボタン、削除ボタン */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {/* ユーザーアバター */}
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="text-xs">
+                  {visit.user?.name?.charAt(0) ?? 'U'}
+                </AvatarFallback>
+              </Avatar>
+
+              {/* 詳細ボタン */}
+              <Button asChild size="sm" className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-1 text-xs">
+                <Link href={`/visits/${visit.id}`}>
+                  詳細
+                </Link>
+              </Button>
+
+              {/* 削除ボタン（オプション） */}
+              {showDelete && (
+                <Button
+                  onClick={handleDelete}
+                  disabled={deleteVisit.isPending}
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 px-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // 🔄 フルバージョン（既存のフルカードデザイン）
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            {/* DB上の実際のvisit_idを表示 */}
             <Badge variant="secondary" className="text-xs font-mono">
               #{visit.id}
             </Badge>
@@ -92,13 +176,11 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {/* 訪問日時 */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Calendar className="h-4 w-4" />
           <span>{formatDate(visit.visitDate)}</span>
         </div>
 
-        {/* 場所情報 */}
         {visit.location.address && (
           <div className="flex items-start gap-2 text-sm text-muted-foreground">
             <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -106,29 +188,26 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
           </div>
         )}
 
-        {/* 訪問者情報 */}
         <div className="flex items-center gap-2">
           <User className="h-4 w-4 text-muted-foreground" />
           <div className="flex items-center gap-2">
             <Avatar className="h-6 w-6">
               <AvatarFallback className="text-xs">
-                {visit.user?.name?.charAt(0) || 'U'}
+                {visit.user?.name?.charAt(0) ?? 'U'}
               </AvatarFallback>
             </Avatar>
             <span className="text-sm text-muted-foreground">
-              {visit.user?.name || 'ユーザー不明'}
+              {visit.user?.name ?? 'ユーザー不明'}
             </span>
           </div>
         </div>
 
-        {/* 評価 */}
         {visit.rating && (
           <div className="flex items-center gap-2">
             {getRatingStars(visit.rating)}
           </div>
         )}
 
-        {/* メモ（最初の80文字のみ表示） */}
         {visit.memo && (
           <div className="text-sm text-muted-foreground bg-muted/50 p-2 rounded-md">
             <p className="line-clamp-2">
@@ -150,16 +229,18 @@ export const VisitCard = ({ visit, index }: VisitCardProps) => {
             </Link>
           </Button>
           
-          <Button
-            onClick={handleDelete}
-            disabled={deleteVisit.isPending}
-            variant="ghost"
-            size="sm"
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-          >
-            <Trash2 className="h-4 w-4 mr-1" />
-            {deleteVisit.isPending ? '削除中...' : '削除'}
-          </Button>
+          {showDelete && (
+            <Button
+              onClick={handleDelete}
+              disabled={deleteVisit.isPending}
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              {deleteVisit.isPending ? '削除中...' : '削除'}
+            </Button>
+          )}
         </div>
       </CardFooter>
     </Card>
