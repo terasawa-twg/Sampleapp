@@ -206,7 +206,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
     return (
       <div className="flex items-center gap-1">
         <div className="flex">
-          {[...Array(5)].map((_, i) => (
+          {Array.from({length: 5}, (_, i) => (
             <Star
               key={i}
               className={cn(

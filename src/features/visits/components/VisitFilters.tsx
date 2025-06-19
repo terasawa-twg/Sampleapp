@@ -69,7 +69,7 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
   // 星評価の表示コンポーネント
   const RatingStars = ({ rating }: { rating: number }) => (
     <div className="flex items-center gap-1">
-      {[...Array(5)].map((_, i) => (
+      {Array.from({length: 5}, (_, i) => (
         <Star
           key={i}
           className={cn(
