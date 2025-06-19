@@ -1,18 +1,16 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { FileText, AlertCircle, RefreshCw, ArrowUp, ArrowDown, Calendar, User, Star } from 'lucide-react';
-import Link from 'next/link';
+import { FileText, AlertCircle, RefreshCw, ArrowUp, ArrowDown } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { VisitFiltersComponent } from '@/features/visits/components/VisitFilters';
+import { VisitCard } from '@/features/visits/components/VisitCard'; // 🆕 統一コンポーネント
 import { useVisits } from '@/features/visits/hooks/useVisits';
 import type { VisitFilters, VisitWithDetails } from '@/features/visits/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
 
 // tRPCから返されるデータの型定義（ESLint対応）
 interface RawVisitData {
@@ -43,110 +41,29 @@ interface ExtendedVisitFilters extends VisitFilters {
 // 並び替えの種類
 type SortOrder = 'asc' | 'desc';
 
-// コンパクトな訪問履歴カードコンポーネント（表示専用）
-const CompactVisitCard = ({ visit, index }: { visit: VisitWithDetails; index: number }) => {
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('ja-JP', {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(date));
-  };
-
-  const getRatingStars = (rating?: number) => {
-    if (!rating) return null;
-    const normalizedRating = rating <= 5 ? rating : Math.ceil(rating / 2);
-    const stars = Math.floor(normalizedRating);
-    return (
-      <div className="flex items-center gap-1">
-        <div className="flex">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={cn(
-                "h-3 w-3",
-                i < stars 
-                  ? "fill-yellow-400 text-yellow-400" 
-                  : "text-muted-foreground"
-              )}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          {/* 左側：番号、場所名、基本情報 */}
-          <div className="flex items-center gap-4 flex-1">
-            {/* 番号 */}
-            <div className="flex-shrink-0">
-              <Badge variant="outline" className="font-mono text-sm w-8 h-8 rounded-full flex items-center justify-center">
-                {index}
-              </Badge>
-            </div>
-            
-            {/* 基本情報 */}
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-base text-foreground mb-1 truncate">
-                {visit.location.name}
-              </h3>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  <span>{formatDate(visit.visitDate)}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <User className="h-3 w-3" />
-                  <span>{visit.user?.name ?? 'ユーザー不明'}</span>
-                </div>
-                {visit.rating && (
-                  <div className="flex items-center gap-1">
-                    {getRatingStars(visit.rating)}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* 右側：アバター、詳細ボタンのみ */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            {/* ユーザーアバター */}
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="text-xs">
-                {visit.user?.name?.charAt(0) ?? 'U'}
-              </AvatarFallback>
-            </Avatar>
-
-            {/* 詳細ボタンのみ */}
-            <Button asChild size="sm" className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-1 text-xs">
-              <Link href={`/visits/${visit.id}`}>
-                詳細
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
 /**
  * 訪問履歴一覧ページのメインコンポーネント (管理画面連携版)
  * - 管理画面からの遷移を前提
  * - 検索・フィルター機能は削除
  * - 特定訪問先の履歴表示に対応
+ * - VisitCardのコンパクトモードを使用してコード大幅削減
+ * - フィルタリングはクライアントサイドで実行
  */
 export const VisitsList = () => {
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<ExtendedVisitFilters>({});
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
-  const { data: visitsData, isLoading, error, refetch } = useVisits(filters);
+  
+  // フィルターなしで全データを取得
+  const { data: visitsData, isLoading, error, refetch } = useVisits({});
+
+  // 🆕 デバッグ用ログ（本番では削除可能）
+  console.log('VisitsList Debug:', {
+    visitsDataCount: visitsData?.length,
+    isLoading,
+    error: error?.message,
+    activeFilters: Object.keys(filters).filter(key => filters[key as keyof ExtendedVisitFilters])
+  });
 
   // URLパラメータから訪問先情報を取得
   const locationName = searchParams.get('location');
@@ -383,13 +300,15 @@ export const VisitsList = () => {
         </Card>
       ) : (
         <>
-          {/* コンパクトな訪問履歴カード一覧 */}
+          {/* 🆕 VisitCardのコンパクトモードを使用したリスト表示 */}
           <div className="space-y-3">
             {filteredAndSortedVisits?.map((visit, index) => (
-              <CompactVisitCard
+              <VisitCard
                 key={visit.id}
                 visit={visit}
                 index={index + 1}
+                variant="compact"
+                showDelete={false}
               />
             ))}
           </div>
