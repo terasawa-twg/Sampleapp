@@ -71,8 +71,8 @@ const SimpleMap = ({
           console.log('🔑 APIキー読み込み完了');
           console.log('🌐 現在のURL:', window.location.href);
           
-          const centerLng = longitude || 139.7671;
-          const centerLat = latitude || 35.6812;
+          const centerLng = longitude ?? 139.7671;
+          const centerLat = latitude ?? 35.6812;
           
           const map = new geoloniaWindow.geolonia.Map({
             container: mapRef.current,
@@ -113,7 +113,7 @@ const SimpleMap = ({
                   transform: rotate(-45deg);
                   cursor: pointer;
                 ">
-                  <span style="transform: rotate(45deg);">#${visitId || '?'}</span>
+                  <span style="transform: rotate(45deg);">#${visitId ?? '?'}</span>
                 </div>
               `;
               
@@ -236,6 +236,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
     );
   }
 
+  //論理条件のため||(論理OR)を使用
   if (error || !visit) {
     return (
       <div className="max-w-6xl mx-auto p-6">
@@ -277,7 +278,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
               {/* IDと＃番号を一致させて表示 */}
               <span className="text-2xl text-muted-foreground font-mono">#{visitId}</span>
-              {locationData?.name || '店舗名不明'}
+              {locationData?.name ?? '店舗名不明'}
             </h1>
             <p className="text-muted-foreground">訪問履歴詳細</p>
           </div>
@@ -334,7 +335,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
                     <div>
                       <span className="font-medium">所在地</span>
                       <p className="text-muted-foreground">
-                        {locationData?.address || '住所未登録'}
+                        {locationData?.address ?? '住所未登録'}
                       </p>
                     </div>
                   </div>
@@ -441,13 +442,13 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback>
-                      {userData?.username?.charAt(0) || 'U'}
+                      {userData?.username?.charAt(0) ?? 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <span className="font-medium text-sm">訪問者</span>
                     <p className="text-muted-foreground text-sm">
-                      {userData?.username || 'ユーザー不明'}
+                      {userData?.username ?? 'ユーザー不明'}
                     </p>
                   </div>
                 </div>
@@ -466,6 +467,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {/*論理条件のため||(論理OR)を使用*/}
               {!photos || photos.length === 0 ? (
                 <div className="text-center py-8">
                   <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
@@ -481,7 +483,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
                       <div key={photo.photo_id} className="group relative aspect-square bg-muted rounded-lg overflow-hidden">
                         <img
                           src={photo.file_path}
-                          alt={`訪問時の写真 ${photo.description || ''}`}
+                          alt={`訪問時の写真 ${photo.description ?? ''}`}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform cursor-pointer"
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />

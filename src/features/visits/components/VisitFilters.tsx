@@ -135,7 +135,7 @@ export const VisitFiltersComponent = ({ onFiltersChange, filters }: VisitFilters
                     評価
                   </Label>
                   <Select 
-                    value={filters.minRating?.toString() || 'all'} 
+                    value={filters.minRating?.toString() ?? 'all'} 
                     onValueChange={handleRatingChange}
                   >
                     <SelectTrigger id="rating-filter">

@@ -21,14 +21,14 @@ export const useVisitDetails = (visitId: number) => {
 
   // 同じ場所への訪問履歴取得（現在の訪問以外）
   const { data: locationVisits, isLoading: isLocationVisitsLoading } = api.visits.getByLocationId.useQuery(
-    { locationId: visit?.location_id || 0 },
+    { locationId: visit?.location_id ?? 0 },
     { 
       enabled: !!visit?.location_id,
       select: (data) => {
         // 現在の訪問を除外し、日付順にソート
         return data
           ?.filter(v => v.visit_id !== visitId)
-          ?.sort((a, b) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime()) || [];
+          ?.sort((a, b) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime()) ?? [];
       }
     }
   );
@@ -36,7 +36,8 @@ export const useVisitDetails = (visitId: number) => {
   return {
     visit,
     photos,
-    locationVisits: locationVisits || [],
+    locationVisits: locationVisits ?? [],
+    /*論理値ORのため||を維持*/
     isLoading: isVisitLoading || isPhotosLoading || isLocationVisitsLoading,
     error: visitError,
   };

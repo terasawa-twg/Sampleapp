@@ -103,7 +103,7 @@ const CompactVisitCard = ({ visit, index }: { visit: VisitWithDetails; index: nu
                 </div>
                 <div className="flex items-center gap-1">
                   <User className="h-3 w-3" />
-                  <span>{visit.user?.name || 'ユーザー不明'}</span>
+                  <span>{visit.user?.name ?? 'ユーザー不明'}</span>
                 </div>
                 {visit.rating && (
                   <div className="flex items-center gap-1">
@@ -119,7 +119,7 @@ const CompactVisitCard = ({ visit, index }: { visit: VisitWithDetails; index: nu
             {/* ユーザーアバター */}
             <Avatar className="h-8 w-8">
               <AvatarFallback className="text-xs">
-                {visit.user?.name?.charAt(0) || 'U'}
+                {visit.user?.name?.charAt(0) ?? 'U'}
               </AvatarFallback>
             </Avatar>
 
@@ -151,7 +151,7 @@ export const VisitsList = () => {
   // URLパラメータから訪問先情報を取得
   const locationName = searchParams.get('location');
   const locationId = searchParams.get('locationId');
-  const isFilteredByLocation = !!(locationName || locationId);
+  const isFilteredByLocation = !!(locationName ?? locationId);
 
   // URLパラメータに基づいて初期フィルターを設定
   useEffect(() => {
@@ -171,8 +171,8 @@ export const VisitsList = () => {
       rating: visit.rating,
       location: {
         id: visit.location_id,
-        name: visit.locations?.name || '不明な場所',
-        address: visit.locations?.address || '',
+        name: visit.locations?.name ?? '不明な場所',
+        address: visit.locations?.address ?? '',
         phoneNumber: undefined,
         description: visit.locations?.description,
         latitude: visit.locations?.latitude,
@@ -180,10 +180,10 @@ export const VisitsList = () => {
       },
       user: {
         id: visit.created_by,
-        name: visit.users_visits_created_byTousers?.username || '不明なユーザー',
+        name: visit.users_visits_created_byTousers?.username ?? '不明なユーザー',
         email: '',
       },
-      photoCount: visit.visit_photos?.length || 0,
+      photoCount: visit.visit_photos?.length ?? 0,
     }));
   }, [visitsData]);
 
@@ -304,7 +304,7 @@ export const VisitsList = () => {
           <h1 className="text-3xl font-bold tracking-tight">
             {isFilteredByLocation ? (
               <>
-                検索: {locationName || `場所ID ${locationId}`}
+                検索: {locationName ?? `場所ID ${locationId}`}
                 <span className="text-base font-normal text-muted-foreground ml-2">の訪問履歴</span>
               </>
             ) : (
@@ -313,7 +313,7 @@ export const VisitsList = () => {
           </h1>
           <p className="text-muted-foreground">
             {isFilteredByLocation 
-              ? `${locationName || '選択された場所'}への訪問記録を確認できます`
+              ? `${locationName ?? '選択された場所'}への訪問記録を確認できます`
               : '訪問記録を確認できます'
             }
           </p>
@@ -364,6 +364,7 @@ export const VisitsList = () => {
             <h3 className="text-xl font-semibold mb-2">
               {isFilteredByLocation
                 ? `${locationName}への訪問履歴がありません`
+                /*論理値ORのため||を維持*/
                 : filters.minRating || filters.startDate || filters.endDate
                   ? 'フィルター条件に一致する訪問履歴がありません'
                   : '訪問履歴がありません'
@@ -372,6 +373,7 @@ export const VisitsList = () => {
             <p className="text-muted-foreground text-center max-w-md mb-6">
               {isFilteredByLocation
                 ? 'この場所への訪問履歴が登録されていません。'
+                /*論理値ORのため||を維持*/
                 : filters.minRating || filters.startDate || filters.endDate
                   ? 'フィルター条件を変更して再度お試しください。'
                   : '訪問履歴が登録されていません。'
