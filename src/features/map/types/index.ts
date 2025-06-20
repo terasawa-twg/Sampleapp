@@ -37,6 +37,7 @@ export interface GeoloniaMapProps {
   readonly onLocationClick?: (locationId: string) => void;
   readonly onMapError?: (error: Error) => void;
   readonly onMapInitialized?: () => void;
+  readonly disableNewMarker?: boolean; // 新規マーカー作成を無効化するオプション
 }
 
 // 訪問履歴パネルのプロパティ型
