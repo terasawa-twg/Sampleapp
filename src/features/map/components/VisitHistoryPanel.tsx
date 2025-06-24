@@ -1,3 +1,5 @@
+//src\features\map\components\VisitHistoryPanel.tsx
+
 'use client';
 
 import { AlertCircle } from 'lucide-react';
@@ -19,7 +21,7 @@ export default function VisitHistoryPanel({
   return (
     <div className="absolute bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200 shadow-lg max-h-80 overflow-hidden">
       <Card className="border-0 shadow-none rounded-none">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-0">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">訪問履歴</CardTitle>
             <Button
@@ -31,14 +33,11 @@ export default function VisitHistoryPanel({
               ×
             </Button>
           </div>
-          <p className="text-sm text-gray-600">
-            クリックしたピンに関連する訪問履歴の詳細がここに表示されます。
-          </p>
         </CardHeader>
         
         <CardContent className="pt-0 max-h-48 overflow-y-auto">
           <div className="mb-4">
-            <h4 className="font-medium text-gray-900 mb-2">
+            <h4 className="font-medium text-gray-900 mb-1">
               訪問先名: {selectedLocation.name}
             </h4>
           </div>

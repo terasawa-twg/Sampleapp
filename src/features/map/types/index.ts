@@ -2,14 +2,16 @@
 // マップ機能専用の型定義
 // =============================================================================
 
-// 訪問先データの型定義
+// 訪問先データの型定義（DB構造に合わせて調整）
 export interface VisitLocation {
-  readonly id: string;
+  readonly id: string; // location_idをstringとして扱う
   readonly name: string;
-  readonly lat: number;
-  readonly lng: number;
-  readonly category: string;
-  readonly isActive?: boolean;
+  readonly lat: number; // DB: latitude
+  readonly lng: number; // DB: longitude
+  readonly category: string; // addressから推定または固定値
+  readonly isActive?: boolean; // 訪問履歴の有無で判定
+  readonly address?: string; // DBのaddressフィールド
+  readonly description?: string; // DBのdescriptionフィールド
 }
 
 // 訪問履歴データの型定義
