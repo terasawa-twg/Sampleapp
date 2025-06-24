@@ -1,14 +1,72 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
-export async function POST(request: NextRequest) {
+// リクエストボディの型定義
+type FileData = {
+  name: string;
+  base64Data: string;
+  size: number;
+  type: string;
+  description?: string;
+};
+
+type UploadRequestBody = {
+  files: FileData[];
+};
+
+// 型ガード関数
+function isValidFileData(data: any): data is FileData {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof data.name === 'string' &&
+    typeof data.base64Data === 'string' &&
+    typeof data.size === 'number' &&
+    typeof data.type === 'string' &&
+    (data.description === undefined || typeof data.description === 'string')
+  );
+}
+
+function isValidUploadRequestBody(body: any): body is UploadRequestBody {
+  return (
+    typeof body === 'object' &&
+    body !== null &&
+    Array.isArray(body.files) &&
+    body.files.every(isValidFileData)
+  );
+}
+
+// レスポンスの型定義
+type UploadedFile = {
+  fileName: string;
+  filePath: string;
+  originalName: string;
+  size: number;
+  mimeType: string;
+  description: string;
+};
+
+type UploadResponse = {
+  success: boolean;
+  files: UploadedFile[];
+  message: string;
+};
+
+type ErrorResponse = {
+  error: string;
+  details?: string;
+};
+
+export async function POST(request: NextRequest): Promise<NextResponse<UploadResponse | ErrorResponse>> {
   try {
     const body = await request.json();
     
-    if (!body.files || !Array.isArray(body.files)) {
+    // 型ガードによるバリデーション
+    if (!isValidUploadRequestBody(body)) {
       return NextResponse.json(
-        { error: 'ファイルデータが不正です' },
+        { error: 'リクエストデータの形式が不正です' },
         { status: 400 }
       );
     }
@@ -22,7 +80,7 @@ export async function POST(request: NextRequest) {
       // ディレクトリがすでに存在する場合は無視
     }
 
-    const uploadedFiles = [];
+    const uploadedFiles: UploadedFile[] = [];
 
     for (const fileData of body.files) {
       const { name, base64Data, size, type, description } = fileData;
