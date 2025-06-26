@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
+import { Separator } from '@/components/custom/separator';
 import { cn } from '@/lib/utils';
 
 // 🗺️ ピン表示対応の地図コンポーネント
