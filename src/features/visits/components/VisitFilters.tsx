@@ -18,14 +18,9 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 
-// 拡張されたフィルター型（評価フィルター追加）
-interface ExtendedVisitFilters extends VisitFilters {
-  minRating?: number;
-}
-
 interface VisitFiltersProps {
-  onFiltersChange: (filters: ExtendedVisitFilters) => void;
-  filters: ExtendedVisitFilters;
+  onFiltersChange: (filters: VisitFilters) => void;
+  filters: VisitFilters;
 }
 
 /**
