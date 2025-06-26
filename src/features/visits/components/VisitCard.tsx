@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Calendar, MapPin, User, Trash2, Eye, Star } from 'lucide-react';
 import type { VisitWithDetails } from '@/features/visits/types';
@@ -30,13 +31,16 @@ export const VisitCard = ({
   showDelete = true 
 }: VisitCardProps) => {
   const deleteVisit = useDeleteVisit();
+  const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async () => {
     if (window.confirm(`${visit.location.name}への訪問履歴を削除しますか？`)) {
       try {
+        setError(null); // エラーリセット
         await deleteVisit.mutateAsync({ id: visit.id });
       } catch (error) {
-        alert('削除に失敗しました。もう一度お試しください。');
+        console.error('削除エラー:', error);
+        setError('削除に失敗しました。もう一度お試しください。');
       }
     }
   };
