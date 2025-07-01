@@ -23,6 +23,7 @@ interface GeoloniaMarker {
     setLngLat: (lngLat: [number, number]) => GeoloniaMarker;
     addTo: (map: GeoloniaMap) => GeoloniaMarker;
     remove: () => void;
+    getElement?: () => HTMLElement | null; // マーカー要素を取得するメソッドを追加
 }
 
 // HeartRails Geo API型
