@@ -1,62 +1,95 @@
 import { useState, useEffect, useCallback } from 'react';
+import { api } from '@/trpc/react';
 import type { VisitHistory } from '../types';
 
-// 訪問履歴データ管理フック
-export function useVisitHistory(locationName?: string) {
+// 訪問履歴データ管理フック（DB取得対応）
+export function useVisitHistory(locationId?: string) {
   const [history, setHistory] = useState<VisitHistory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchHistory = useCallback(async (name: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      // TODO: 実際のAPI呼び出しに置き換える
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const mockHistory: VisitHistory[] = [
-        {
-          id: '1',
-          date: '2025年5月1日',
-          location: name,
-          files: 3,
-          description: 'プロジェクトの概要を説明しました。'
-        },
-        {
-          id: '2',
-          date: '2025年6月6日',
-          location: name,
-          files: 2,
-          description: '訪問メモ営業検討#2を実施し、進捗を確認しました。'
-        }
-      ];
-      
-      setHistory(mockHistory);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '訪問履歴の取得に失敗しました';
-      setError(errorMessage);
-      console.error('訪問履歴取得エラー:', err);
-    } finally {
-      setIsLoading(false);
+  // locationIdをnumberに変換（tRPCスキーマに合わせる）
+  const numericLocationId = locationId ? parseInt(locationId, 10) : undefined;
+
+  // tRPCクエリを使用してDBから訪問履歴を取得
+  const visitQuery = api.visits.getByLocationId.useQuery(
+    { locationId: numericLocationId! },
+    {
+      enabled: !!numericLocationId && !isNaN(numericLocationId),
+      retry: 1,
+      refetchOnWindowFocus: false,
     }
+  );
+
+  // データ変換関数
+  const transformVisitData = useCallback((visits: any[]): VisitHistory[] => {
+    return visits.map(visit => ({
+      id: visit.visit_id.toString(),
+      date: new Date(visit.visit_date).toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
+      location: visit.locations?.name || '不明な場所',
+      files: visit.visit_photos?.length || 0,
+      description: visit.notes || '訪問メモはありません',
+    }));
   }, []);
 
+  // tRPCクエリの状態を監視してstateを更新
   useEffect(() => {
-    if (!locationName) {
+    if (!numericLocationId || isNaN(numericLocationId)) {
       setHistory([]);
       setError(null);
+      setIsLoading(false);
       return;
     }
 
-    fetchHistory(locationName);
-  }, [locationName, fetchHistory]);
-
-  const refetch = useCallback(() => {
-    if (locationName) {
-      fetchHistory(locationName);
+    setIsLoading(visitQuery.isLoading);
+    
+    if (visitQuery.error) {
+      setError(visitQuery.error.message || '訪問履歴の取得に失敗しました');
+      setHistory([]);
+    } else if (visitQuery.data) {
+      try {
+        const transformedData = transformVisitData(visitQuery.data);
+        setHistory(transformedData);
+        setError(null);
+      } catch (err) {
+        console.error('データ変換エラー:', err);
+        setError('データの処理に失敗しました');
+        setHistory([]);
+      }
+    } else {
+      setHistory([]);
+      setError(null);
     }
-  }, [locationName, fetchHistory]);
+  }, [
+    numericLocationId,
+    visitQuery.isLoading,
+    visitQuery.error,
+    visitQuery.data,
+    transformVisitData,
+  ]);
+
+  // 手動でデータを再取得する関数
+  const refetch = useCallback(() => {
+    if (numericLocationId && !isNaN(numericLocationId)) {
+      visitQuery.refetch();
+    }
+  }, [numericLocationId, visitQuery]);
+
+  // デバッグ用ログ
+  useEffect(() => {
+    console.log('useVisitHistory状況:', {
+      locationId,
+      numericLocationId,
+      isLoading,
+      error,
+      historyCount: history.length,
+      queryEnabled: !!numericLocationId && !isNaN(numericLocationId),
+    });
+  }, [locationId, numericLocationId, isLoading, error, history.length]);
 
   return {
     history,

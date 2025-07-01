@@ -30,7 +30,7 @@ export default function MapContainer() {
   } = useMapState(locations);
   
   // 訪問履歴データ管理
-  const { history, isLoading: historyLoading, error: historyError } = useVisitHistory(selectedLocation?.name);
+  const { history, isLoading: historyLoading, error: historyError } = useVisitHistory(selectedLocation?.id);
 
   // イベントハンドラー
   const handleLocationClick = useCallback((locationId: string) => {
