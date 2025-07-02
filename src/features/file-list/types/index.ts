@@ -1,3 +1,4 @@
+// src/features/file-list/types/index.ts
 // ファイル一覧で使用する型定義
 
 export interface FileListItem {
@@ -48,17 +49,4 @@ export interface LocationSearchProps {
   searchTerm: string;
   onSearchChange: (term: string) => void;
   placeholder?: string;
-}
-
-export interface CityFilterProps {
-  selectedCities: string[];
-  availableCities: string[];
-  onCityChange: (cities: string[]) => void;
-}
-
-export interface DateRangeFilterProps {
-  dateFrom?: Date;
-  dateTo?: Date;
-  onDateFromChange: (date?: Date) => void;
-  onDateToChange: (date?: Date) => void;
 }
