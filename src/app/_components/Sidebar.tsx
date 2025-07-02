@@ -50,7 +50,7 @@ export function Sidebar({ currentUser, currentPath = "/" }: SidebarProps) {
     {
       icon: Camera,
       label: 'ファイル管理',
-      path: '/files'
+      path: '/file-list'
     },
     {
       icon: Clock,
