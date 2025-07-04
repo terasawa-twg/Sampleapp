@@ -1,5 +1,5 @@
 import { api } from '@/trpc/react';
-import type { VisitFilters } from '@/features/visits/types';
+import type { VisitFilters } from '@/features/history/types';
 
 /**
  * 訪問履歴一覧を取得するフック

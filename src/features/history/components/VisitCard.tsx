@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Calendar, MapPin, User, Trash2, Eye, Star } from 'lucide-react';
-import type { VisitWithDetails } from '@/features/visits/types';
-import { useDeleteVisit } from '@/features/visits/hooks/useVisits';
+import type { VisitWithDetails } from '@/features/history/types';
+import { useDeleteVisit } from '@/features/history/hooks/useVisits';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

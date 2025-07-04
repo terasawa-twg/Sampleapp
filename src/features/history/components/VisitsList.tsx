@@ -3,10 +3,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { FileText, AlertCircle, RefreshCw, ArrowUp, ArrowDown } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { VisitFiltersComponent } from '@/features/visits/components/VisitFilters';
-import { VisitCard } from '@/features/visits/components/VisitCard';
-import { useVisits } from '@/features/visits/hooks/useVisits';
-import type { VisitFilters, VisitWithDetails } from '@/features/visits/types';
+import { VisitFiltersComponent } from '@/features/history/components/VisitFilters';
+import { VisitCard } from '@/features/history/components/VisitCard';
+import { useVisits } from '@/features/history/hooks/useVisits';
+import type { VisitFilters, VisitWithDetails } from '@/features/history/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';

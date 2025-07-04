@@ -1,4 +1,4 @@
-import { VisitsList } from '@/features/visits';
+import { VisitsList } from '@/features/history';
 
 /**
  * 訪問履歴一覧ページ

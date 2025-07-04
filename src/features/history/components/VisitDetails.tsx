@@ -18,8 +18,8 @@ import {
   RefreshCw,
   ExternalLink
 } from 'lucide-react';
-import { useVisitDetails } from '@/features/visits/hooks/useVisitDetails';
-import { useDeleteVisit } from '@/features/visits/hooks/useVisits';
+import { useVisitDetails } from '@/features/history/hooks/useVisitDetails';
+import { useDeleteVisit } from '@/features/history/hooks/useVisits';
 import { SimpleMap } from './VisitDetails/SimpleMap';
 import { MediaSection } from './VisitDetails/MediaSection';
 import { LocationInfo } from './VisitDetails/LocationInfo';

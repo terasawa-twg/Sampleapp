@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Filter, X, ChevronDown, ChevronRight, Star } from 'lucide-react';
-import type { VisitFilters } from '@/features/visits/types';
+import type { VisitFilters } from '@/features/history/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

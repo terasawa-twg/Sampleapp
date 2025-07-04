@@ -1,4 +1,4 @@
-import { VisitDetails } from '@/features/visits';
+import { VisitDetails } from '@/features/history';
 
 interface VisitDetailPageProps {
   params: Promise<{
