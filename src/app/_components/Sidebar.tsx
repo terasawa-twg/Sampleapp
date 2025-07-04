@@ -1,3 +1,5 @@
+// 20250704 Next.js Link コンポーネントを追加（ナビゲーション機能のため）
+import Link from 'next/link';
 import { 
   MapPin, 
   Grid3X3, 
@@ -63,12 +65,13 @@ export function Sidebar({ currentUser, currentPath = "/" }: SidebarProps) {
     <aside className="w-64 h-screen bg-gray-50 border-r border-gray-200 flex flex-col">
       {/* ========== ロゴ部分 ========== */}
       <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center gap-2">
+        {/* 20250704 ロゴをクリック可能にしてダッシュボードから遷移 */}
+        <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="w-8 h-8 bg-red-500 rounded flex items-center justify-center">
             <MapPin className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-bold text-gray-900">VisitLogger</span>
-        </div>
+        </Link>
       </div>
 
       {/* ========== ナビゲーションメニュー ========== */}
@@ -80,17 +83,20 @@ export function Sidebar({ currentUser, currentPath = "/" }: SidebarProps) {
             
             return (
               <li key={item.path}>
-                <Button
-                  variant={active ? "default" : "ghost"}
-                  className={`w-full justify-start gap-3 h-12 ${
-                    active 
-                      ? "bg-red-500 text-white hover:bg-red-600" 
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span className="text-sm font-medium">{item.label}</span>
-                </Button>
+                {/* 20250704 ボタンをLinkでラップしてページ遷移を可能にした */}
+                <Link href={item.path} className="block">
+                  <Button
+                    variant={active ? "default" : "ghost"}
+                    className={`w-full justify-start gap-3 h-12 ${
+                      active 
+                        ? "bg-red-500 text-white hover:bg-red-600" 
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </Button>
+                </Link>
               </li>
             );
           })}
