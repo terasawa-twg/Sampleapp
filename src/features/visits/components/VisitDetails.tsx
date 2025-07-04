@@ -53,7 +53,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
     if (window.confirm(`${visit?.locations?.name}への訪問履歴を削除しますか？`)) {
       try {
         await deleteVisit.mutateAsync({ id: visitId });
-        router.push('/visits');
+        router.push('/history'); // /visits から /history に変更
       } catch (error) {
         alert('削除に失敗しました。もう一度お試しください。');
       }
@@ -122,7 +122,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
                 <p className="mt-1">指定された訪問履歴の詳細を取得できませんでした。</p>
               </div>
               <Button asChild variant="outline" size="sm">
-                <Link href="/visits">
+                <Link href="/history">{/* /visits から /history に変更 */}
                   一覧に戻る
                 </Link>
               </Button>
@@ -142,7 +142,7 @@ export const VisitDetails = ({ visitId }: VisitDetailsProps) => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <Button asChild variant="ghost" size="sm">
-            <Link href="/visits">
+            <Link href="/history">{/* /visits から /history に変更 */}
               <ArrowLeft className="h-4 w-4 mr-2" />
               一覧に戻る
             </Link>

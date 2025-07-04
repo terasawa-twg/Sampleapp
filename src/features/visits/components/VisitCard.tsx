@@ -132,9 +132,9 @@ export const VisitCard = ({
                 </AvatarFallback>
               </Avatar>
 
-              {/* 詳細ボタン */}
+              {/* 詳細ボタン - /history に変更 */}
               <Button asChild size="sm" className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-1 text-xs">
-                <Link href={`/visits/${visit.id}`}>
+                <Link href={`/history/${visit.id}`}>
                   詳細
                 </Link>
               </Button>
@@ -226,8 +226,9 @@ export const VisitCard = ({
 
       <CardFooter className="pt-3 border-t">
         <div className="flex justify-between items-center w-full">
+          {/* 詳細を見るボタン - /history に変更 */}
           <Button asChild variant="default" size="sm" className="bg-amber-600 hover:bg-amber-700">
-            <Link href={`/visits/${visit.id}`}>
+            <Link href={`/history/${visit.id}`}>
               <Eye className="h-4 w-4 mr-1" />
               詳細を見る
             </Link>

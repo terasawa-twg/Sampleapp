@@ -52,11 +52,11 @@ export const VisitHistory = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {/* 🔗 過去の訪問履歴をクリック可能なリンクに変更 */}
+            {/* 🔗 過去の訪問履歴をクリック可能なリンクに変更 - /history に変更 */}
             {locationVisits.map((pastVisit) => (
               <Link 
                 key={pastVisit.visit_id} 
-                href={`/visits/${pastVisit.visit_id}`}
+                href={`/history/${pastVisit.visit_id}`} /* /visits から /history に変更 */
                 className="block p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors group cursor-pointer border hover:border-muted-foreground/20"
               >
                 <div className="flex items-start justify-between">
