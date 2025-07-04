@@ -42,14 +42,30 @@ export function FileList() {
   });
 
   // ダウンロード処理
-  const handleDownload = (photoId: number, filePath: string) => {
-    // 実際の実装では、セキュアなダウンロードURLを生成する必要があります
-    const link = document.createElement('a');
-    link.href = filePath;
-    link.download = filePath.split('/').pop() || 'file';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async (photoId: number, filePath: string) => {
+    try {
+      // ファイルが存在するかチェック
+      const response = await fetch(filePath, { method: 'HEAD' });
+      
+      if (!response.ok) {
+        console.warn(`ファイルが見つかりません: ${filePath}`);
+        // 本来はトースト通知を使用したいが、今回は簡単にconsole.warnで通知
+        alert('ファイルが見つかりません。管理者にお問い合わせください。');
+        return;
+      }
+      
+      // ファイルが存在する場合のダウンロード処理
+      const link = document.createElement('a');
+      link.href = filePath;
+      link.download = filePath.split('/').pop() || 'file';
+      link.target = '_blank'; // 新しいタブで開く
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('ダウンロードエラー:', error);
+      alert('ダウンロードに失敗しました。管理者にお問い合わせください。');
+    }
   };
 
   // 削除処理
@@ -120,7 +136,7 @@ export function FileList() {
           
           <LocationSearch
             searchTerm={filters.searchTerm}
-            onSearchChange={(term) => updateFilters({ searchTerm: term })}
+            onSearchChange={(term: string) => updateFilters({ searchTerm: term })}
           />
         </div>
 

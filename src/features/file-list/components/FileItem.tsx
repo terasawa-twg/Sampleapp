@@ -3,6 +3,7 @@
 
 import type { FileListItem } from '../types';
 import { FileActions } from './FileActions';
+import { useState, useEffect } from 'react';
 
 interface FileItemProps {
   file: FileListItem;
@@ -12,6 +13,8 @@ interface FileItemProps {
 }
 
 export function FileItem({ file, onDownload, onDelete, isDeleting }: FileItemProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   // ファイル名をパスから抽出
   const getFileName = (filePath: string) => {
     return filePath.split('/').pop() || filePath;
@@ -57,17 +60,23 @@ export function FileItem({ file, onDownload, onDelete, isDeleting }: FileItemPro
     const isImage = ['jpg', 'jpeg', 'png', 'gif'].includes(ext || '');
     
     if (isImage) {
+      if (imageError) {
+        return (
+          <div className="w-12 h-12 bg-gray-200 rounded border flex items-center justify-center">
+            <div className="text-xs text-gray-500">画像</div>
+          </div>
+        );
+      }
+
       return (
         <div className="w-12 h-12 bg-gray-100 rounded border overflow-hidden">
           <img 
             src={filePath} 
             alt="サムネイル" 
             className="w-full h-full object-cover"
-            onError={(e) => {
-              // 画像読み込みエラーの場合はプレースホルダーを表示
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">画像</div>';
-            }}
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageError(true)}
+            style={{ display: imageError ? 'none' : 'block' }}
           />
         </div>
       );
