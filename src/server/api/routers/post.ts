@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 
 export const postRouter = createTRPCRouter({
@@ -11,6 +10,8 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
+  // ❌ データベースのpostテーブルがないため、以下をコメントアウト
+  /*
   create: publicProcedure
     .input(z.object({ name: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
@@ -28,4 +29,5 @@ export const postRouter = createTRPCRouter({
 
     return post ?? null;
   }),
+  */
 });
