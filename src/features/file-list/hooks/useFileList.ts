@@ -10,7 +10,6 @@ const ITEMS_PER_PAGE = 10;
 export function useFileList() {
   const [filters, setFilters] = useState<FileListFilters>({
     searchTerm: '',
-    selectedCities: [],
     dateFrom: undefined,
     dateTo: undefined,
   });
@@ -38,18 +37,6 @@ export function useFileList() {
         
         if (!fileName.toLowerCase().includes(searchLower) && 
             !locationName.toLowerCase().includes(searchLower)) {
-          return false;
-        }
-      }
-
-      // 市区町村でのフィルタリング
-      if (filters.selectedCities.length > 0) {
-        // 住所から市区町村を抽出（簡易的な実装）
-        const address = file.visits.locations.address || '';
-        const hasSelectedCity = filters.selectedCities.some(city => 
-          address.includes(city)
-        );
-        if (!hasSelectedCity) {
           return false;
         }
       }
@@ -82,23 +69,6 @@ export function useFileList() {
     itemsPerPage: ITEMS_PER_PAGE,
   }), [filteredFiles.length, currentPage]);
 
-  // 利用可能な市区町村のリストを生成
-  const availableCities = useMemo(() => {
-    if (!allFiles) return [];
-    
-    const cities = new Set<string>();
-    allFiles.forEach(file => {
-      const address = file.visits.locations.address || '';
-      // 住所から都道府県と市区町村を抽出（簡易的な実装）
-      const matches = address.match(/[都道府県][市区町村]/g);
-      if (matches) {
-        matches.forEach(match => cities.add(match));
-      }
-    });
-    
-    return Array.from(cities).sort();
-  }, [allFiles]);
-
   // フィルター更新関数
   const updateFilters = (newFilters: Partial<FileListFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
@@ -114,7 +84,6 @@ export function useFileList() {
   const resetFilters = () => {
     setFilters({
       searchTerm: '',
-      selectedCities: [],
       dateFrom: undefined,
       dateTo: undefined,
     });
@@ -125,7 +94,6 @@ export function useFileList() {
     files: paginatedFiles,
     filters,
     pagination,
-    availableCities,
     loading: isLoading,
     error: error?.message || null,
     updateFilters,

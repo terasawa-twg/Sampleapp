@@ -24,7 +24,6 @@ export interface FileListItem {
 
 export interface FileListFilters {
   searchTerm: string;
-  selectedCities: string[];
   dateFrom?: Date;
   dateTo?: Date;
 }

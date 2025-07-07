@@ -1,11 +1,8 @@
-// src/features/shared/components/VisitLocationFilter.tsx
-// 日付でのフィルター機能
-
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-// 型定義をここに直接定義
+// 日付範囲フィルターの型定義
 interface DateRangeFilterProps {
   dateFrom?: Date;
   dateTo?: Date;

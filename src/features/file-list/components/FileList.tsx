@@ -8,10 +8,10 @@ import { api } from '@/trpc/react';
 import { useFileList } from '../hooks/useFileList';
 import { FileItem } from './FileItem';
 import { Pagination } from './Pagination';
-import { CityFilter, DateRangeFilter } from './VisitLocationFilter';
-import { LocationSearch } from '@/features/shared/components/LocationSearch';
+import { DateRangeFilter } from './VisitLocationFilter';
 import { Button } from '@/components/ui/button';
-import { Loader2, RefreshCw, X } from 'lucide-react';
+import { Loader2, RefreshCw, X, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 export function FileList() {
   const [deletingFileId, setDeletingFileId] = useState<number | null>(null);
@@ -20,7 +20,6 @@ export function FileList() {
     files,
     filters,
     pagination,
-    availableCities,
     loading,
     error,
     updateFilters,
@@ -74,10 +73,21 @@ export function FileList() {
     deleteFileMutation.mutate({ id: photoId });
   };
 
+  // 現在表示中のアイテム範囲を計算
+  const getDisplayRange = () => {
+    if (pagination.totalItems === 0) {
+      return { start: 0, end: 0 };
+    }
+    const start = (pagination.currentPage - 1) * pagination.itemsPerPage + 1;
+    const end = Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems);
+    return { start, end };
+  };
+
+  const { start, end } = getDisplayRange();
+
   // アクティブフィルターの数を計算
   const activeFilterCount = 
     (filters.searchTerm ? 1 : 0) +
-    filters.selectedCities.length +
     (filters.dateFrom ? 1 : 0) +
     (filters.dateTo ? 1 : 0);
 
@@ -117,27 +127,27 @@ export function FileList() {
               <h2 className="text-lg font-medium text-gray-900">
                 訪問履歴に紐づくファイル
               </h2>
-              <span className="text-sm text-gray-500">
-                {pagination.totalItems}件 / {Math.ceil(pagination.totalItems / pagination.itemsPerPage)}ページ
+              </div>
+              <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-500 mr-4">
+                {pagination.totalItems > 0 
+                  ? `${start}～${end}件／${pagination.totalItems}件`
+                  : '0件'
+                }
               </span>
+              {activeFilterCount > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="flex items-center gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  フィルターをクリア ({activeFilterCount})
+                </Button>
+              )}
             </div>
-            {activeFilterCount > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetFilters}
-                className="flex items-center gap-2"
-              >
-                <X className="h-4 w-4" />
-                フィルターをクリア ({activeFilterCount})
-              </Button>
-            )}
           </div>
-          
-          <LocationSearch
-            searchTerm={filters.searchTerm}
-            onSearchChange={(term: string) => updateFilters({ searchTerm: term })}
-          />
         </div>
 
         {/* ファイル一覧 */}
@@ -180,12 +190,20 @@ export function FileList() {
         <h3 className="text-lg font-medium text-gray-900 mb-6">フィルター</h3>
         
         <div className="space-y-6">
-          {/* 市区町村フィルター */}
-          <CityFilter
-            selectedCities={filters.selectedCities}
-            availableCities={availableCities}
-            onCityChange={(cities: string[]) => updateFilters({ selectedCities: cities })}
-          />
+          {/* 訪問先名で検索 */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-900 mb-3">訪問先名で検索</h4>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="訪問先名で検索"
+                value={filters.searchTerm}
+                onChange={(e) => updateFilters({ searchTerm: e.target.value })}
+                className="pl-10 w-full"
+              />
+            </div>
+          </div>
 
           {/* 日付範囲フィルター */}
           <DateRangeFilter
