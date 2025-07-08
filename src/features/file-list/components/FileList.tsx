@@ -8,7 +8,7 @@ import { api } from '@/trpc/react';
 import { useFileList } from '../hooks/useFileList';
 import { FileItem } from './FileItem';
 import { Pagination } from './Pagination';
-import { DateRangeFilter } from './VisitLocationFilter';
+import { DateRangeFilter } from '@/app/_components/Filters';
 import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw, X, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
