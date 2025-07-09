@@ -1,3 +1,6 @@
+// src/app/_components/Sidebar.tsx
+// サイドバーコンポーネントの定義
+
 // 20250704 Next.js Link コンポーネントを追加（ナビゲーション機能のため）
 import Link from 'next/link';
 import { 
@@ -35,7 +38,7 @@ export function Sidebar({ currentUser, currentPath = "/" }: SidebarProps) {
     {
       icon: MapPin,
       label: 'ダッシュボード',
-      path: '/dashboard'
+      path: '/'
     },
     {
       icon: Grid3X3,
