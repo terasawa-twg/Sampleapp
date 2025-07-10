@@ -8,6 +8,21 @@ interface UseMapInitializationProps {
   onMapError?: (error: Error) => void;
 }
 
+// Window オブジェクトの型拡張
+declare global {
+  interface Window {
+    geoloniamap?: unknown;
+    Geolonia?: unknown;
+    geoloniaEmbed?: {
+      Map?: unknown;
+      Marker?: unknown;
+      SimpleStyle?: unknown;
+      embedVersion?: unknown;
+      geolonia?: unknown;
+    };
+  }
+}
+
 export const useMapInitialization = ({
   disableNewMarker = false,
   onMapError
@@ -38,7 +53,7 @@ export const useMapInitialization = ({
         }
         
         // 新しいマーカーを追加
-        if (!window.geolonia || !window.geolonia.Marker) {
+        if (!window.geolonia?.Marker) {
           console.error('window.geolonia.Marker が利用できません');
           return;
         }
@@ -116,8 +131,8 @@ export const useMapInitialization = ({
       console.log('地図初期化試行:', retryCount + 1);
       console.log('利用可能なGeolonia関連:', Object.keys(window).filter(key => key.toLowerCase().includes('geolonia')));
       console.log('window.geolonia:', !!window.geolonia);
-      console.log('window.geoloniamap:', !!(window as any).geoloniamap);
-      console.log('window.Geolonia:', !!(window as any).Geolonia);
+      console.log('window.geoloniamap:', !!window.geoloniamap);
+      console.log('window.Geolonia:', !!window.Geolonia);
       
       // 実際の構造を確認
       if (window.geolonia) {
@@ -128,9 +143,9 @@ export const useMapInitialization = ({
       }
       
       // geoloniaEmbed も確認
-      if ((window as any).geoloniaEmbed) {
-        console.log('window.geoloniaEmbed の構造:', Object.keys((window as any).geoloniaEmbed));
-        console.log('window.geoloniaEmbed:', (window as any).geoloniaEmbed);
+      if (window.geoloniaEmbed) {
+        console.log('window.geoloniaEmbed の構造:', Object.keys(window.geoloniaEmbed));
+        console.log('window.geoloniaEmbed:', window.geoloniaEmbed);
       }
 
       try {

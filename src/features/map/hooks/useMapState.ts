@@ -1,6 +1,6 @@
-// src\features\map\hooks\useMapState.ts
+// src/features/map/hooks/useMapState.ts
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import type { MapState, VisitLocation } from '../types';
 
 // 地図の状態管理フック
@@ -10,30 +10,6 @@ export function useMapState(locations: VisitLocation[]) {
     isMapInitialized: false,
     mapError: null,
   });
-
-  // 選択中の訪問先を取得
-  const selectedLocation = useMemo(() => {
-    if (!mapState.selectedLocationId) {
-      return null;
-    }
-    
-    // locationsが空の場合は、選択状態をnullにする（一時保留はしない）
-    if (locations.length === 0) {
-      console.log('locations配列が空のため、選択状態をクリア');
-      return null;
-    }
-    
-    const found = locations.find(loc => loc.id === mapState.selectedLocationId);
-    if (!found) {
-      console.log('選択されたlocationが見つかりません:', {
-        selectedLocationId: mapState.selectedLocationId,
-        availableIds: locations.map(loc => loc.id)
-      });
-      return null;
-    }
-    
-    return found;
-  }, [mapState.selectedLocationId, locations]); // locationsを依存配列に追加
 
   // 選択中の訪問先を設定
   const selectLocation = useCallback((locationId: string) => {
@@ -79,14 +55,14 @@ export function useMapState(locations: VisitLocation[]) {
   }, []); // setMapErrorへの依存を削除し、直接setMapStateを使用
 
   // 現在選択中のlocationを実際に取得（リアルタイム）
-  const currentSelectedLocation = locations.find(loc => loc.id === mapState.selectedLocationId) || null;
+  const currentSelectedLocation = locations.find(loc => loc.id === mapState.selectedLocationId) ?? null;
 
   // デバッグ用ログ
   console.log('useMapState状況:', {
     selectedLocationId: mapState.selectedLocationId,
     selectedLocationExists: !!currentSelectedLocation,
     locationsCount: locations.length,
-    selectedLocationName: currentSelectedLocation?.name || 'なし'
+    selectedLocationName: currentSelectedLocation?.name ?? 'なし'
   });
 
   return {

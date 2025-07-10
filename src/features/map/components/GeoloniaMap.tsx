@@ -76,7 +76,7 @@ export default function GeoloniaMap({
       try {
         console.log(`マーカー${index + 1}を作成中:`, location.name, `(${location.lat}, ${location.lng})`);
         // window.geolonia の存在を確認
-        if (!window.geolonia || !window.geolonia.Marker) {
+        if (!window.geolonia?.Marker) {
           console.error('window.geolonia.Marker が利用できません');
           return;
         }
@@ -120,8 +120,8 @@ export default function GeoloniaMap({
       locationMarkersRef.current = [];
       console.log('マーカークリーンアップ完了');
     };
-  }, [mapInitialized, locationIds, onLocationClick, mapRef, mapContainerRef]);
-  
+  }, [mapInitialized, locationIds, onLocationClick, mapRef, mapContainerRef, selectedLocationId, memoizedLocations]);
+
   // 選択状態が変更された時のマーカー表示更新（マーカー再作成は行わない）
   useEffect(() => {
     console.log('選択状態変更の表示更新:', {
@@ -158,7 +158,7 @@ export default function GeoloniaMap({
             地図の読み込みに失敗しました
           </div>
           <div className="text-gray-600 text-sm">
-            {error || mapError}
+            {error ?? mapError}
           </div>
         </div>
       </div>

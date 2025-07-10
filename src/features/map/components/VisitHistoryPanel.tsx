@@ -1,4 +1,5 @@
-//src\features\map\components\VisitHistoryPanel.tsx
+// src/features/map/components/VisitHistoryPanel.tsx
+// 訪問履歴パネルコンポーネント
 
 'use client';
 

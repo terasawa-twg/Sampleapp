@@ -1,3 +1,6 @@
+// src/features/map/components/MapControls.tsx
+// マップコントロールコンポーネント
+
 'use client';
 
 import { RefreshCw, Plus } from 'lucide-react';

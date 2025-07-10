@@ -1,4 +1,5 @@
-//src\features\map\components\MapContainer.tsx
+// src/features/map/components/MapContainer.tsx
+// マップ機能のメインコンテナコンポーネント
 
 'use client';
 
@@ -25,7 +26,6 @@ export default function MapContainer() {
     mapError,
     selectLocation,
     deselectLocation,
-    setMapError,
     clearMapError,
   } = useMapState(locations);
   
@@ -34,9 +34,9 @@ export default function MapContainer() {
 
   // イベントハンドラー
   const handleLocationClick = useCallback((locationId: string) => {
-  console.log('handleLocationClick実行:', locationId);
-  selectLocation(locationId);
-}, [selectLocation]);
+    console.log('handleLocationClick実行:', locationId);
+    selectLocation(locationId);
+  }, [selectLocation]);
 
   const handleAddLocation = useCallback(() => {
     // TODO: 訪問先追加モーダルを開く
@@ -50,23 +50,23 @@ export default function MapContainer() {
   }, []);
 
   // refetch処理を最適化
-  const handleRetry = useCallback(() => {
+  const handleRetry = useCallback(async () => {
     clearMapError();
-    refetch();
+    await refetch();
   }, [clearMapError, refetch]);
 
   // 状態の計算
-  const hasError = locationsError || mapError;
+  const hasError = locationsError ?? mapError;
   const isLoading = locationsLoading;
 
   // selectedLocationIdを安定化
   const selectedLocationId = useMemo(() => {
-    return selectedLocation?.id || null;
+    return selectedLocation?.id ?? null;
   }, [selectedLocation?.id]);
 
   // エラー状態を安定化
   const errorState = useMemo(() => {
-    return hasError ? (locationsError || mapError) : null;
+    return hasError ? (locationsError ?? mapError) : null;
   }, [hasError, locationsError, mapError]);
 
   // デバッグ用：データの状況をコンソールに出力
@@ -75,7 +75,7 @@ export default function MapContainer() {
     isLoading,
     hasError,
     selectedLocationId: selectedLocationId,
-    selectedLocationName: selectedLocation?.name || null,
+    selectedLocationName: selectedLocation?.name ?? null,
     locations: locations,
     locationNames: locations.map(loc => loc.name)
   });
@@ -91,12 +91,12 @@ export default function MapContainer() {
                 <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-red-800">エラーが発生しました</p>
-                  <p className="text-sm text-red-600 mt-1">{locationsError || mapError}</p>
+                  <p className="text-sm text-red-600 mt-1">{locationsError ?? mapError}</p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleRetry}
+                  onClick={() => void handleRetry()}
                   className="border-red-300 text-red-700 hover:bg-red-100"
                 >
                   <RefreshCw className="h-4 w-4" />
@@ -124,7 +124,7 @@ export default function MapContainer() {
       <div className="absolute top-4 right-4 z-10">
         <MapControls
           onAddLocation={handleAddLocation}
-          onRefresh={handleRetry}
+          onRefresh={() => void handleRetry()}
           isLoading={isLoading}
           hasError={!!hasError}
         />

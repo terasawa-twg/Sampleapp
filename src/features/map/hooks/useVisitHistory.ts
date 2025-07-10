@@ -1,6 +1,19 @@
+// src/features/map/hooks/useVisitHistory.ts
+
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/trpc/react';
 import type { VisitHistory } from '../types';
+
+// 訪問データの型定義
+interface VisitData {
+  visit_id: string | number;
+  visit_date: string | Date;
+  locations?: {
+    name: string;
+  } | null;
+  visit_photos?: unknown[] | null;
+  notes?: string | null;
+}
 
 // 訪問履歴データ管理フック（DB取得対応）
 export function useVisitHistory(locationId?: string) {
@@ -22,7 +35,7 @@ export function useVisitHistory(locationId?: string) {
   );
 
   // データ変換関数
-  const transformVisitData = useCallback((visits: any[]): VisitHistory[] => {
+  const transformVisitData = useCallback((visits: VisitData[]): VisitHistory[] => {
     return visits.map(visit => ({
       id: visit.visit_id.toString(),
       date: new Date(visit.visit_date).toLocaleDateString('ja-JP', {
@@ -30,9 +43,9 @@ export function useVisitHistory(locationId?: string) {
         month: 'long',
         day: 'numeric',
       }),
-      location: visit.locations?.name || '不明な場所',
-      files: visit.visit_photos?.length || 0,
-      description: visit.notes || '訪問メモはありません',
+      location: visit.locations?.name ?? '不明な場所',
+      files: visit.visit_photos?.length ?? 0,
+      description: visit.notes ?? '訪問メモはありません',
     }));
   }, []);
 
@@ -48,11 +61,11 @@ export function useVisitHistory(locationId?: string) {
     setIsLoading(visitQuery.isLoading);
     
     if (visitQuery.error) {
-      setError(visitQuery.error.message || '訪問履歴の取得に失敗しました');
+      setError(visitQuery.error.message ?? '訪問履歴の取得に失敗しました');
       setHistory([]);
     } else if (visitQuery.data) {
       try {
-        const transformedData = transformVisitData(visitQuery.data);
+        const transformedData = transformVisitData(visitQuery.data as VisitData[]);
         setHistory(transformedData);
         setError(null);
       } catch (err) {
@@ -75,7 +88,7 @@ export function useVisitHistory(locationId?: string) {
   // 手動でデータを再取得する関数
   const refetch = useCallback(() => {
     if (numericLocationId && !isNaN(numericLocationId)) {
-      visitQuery.refetch();
+      void visitQuery.refetch();
     }
   }, [numericLocationId, visitQuery]);
 

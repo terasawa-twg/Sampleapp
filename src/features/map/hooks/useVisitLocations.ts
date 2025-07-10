@@ -4,17 +4,30 @@ import { useCallback } from 'react';
 import { api } from '@/trpc/react';
 import type { VisitLocation } from '../types';
 
+// DB結果の型定義
+interface DbLocation {
+  location_id: string | number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  address?: string | null;
+  description?: string | null;
+  _count?: {
+    visits: number;
+  } | null;
+}
+
 // DB結果をフロントエンド用の型に変換する関数
-function transformDbLocationToVisitLocation(dbLocation: any): VisitLocation {
+function transformDbLocationToVisitLocation(dbLocation: DbLocation): VisitLocation {
   return {
     id: dbLocation.location_id.toString(),
     name: dbLocation.name,
     lat: dbLocation.latitude,
     lng: dbLocation.longitude,
-    category: dbLocation.address || '未分類', // addressをcategoryとして使用
-    isActive: dbLocation._count?.visits > 0 || false, // 訪問履歴があるかどうか
-    address: dbLocation.address,
-    description: dbLocation.description,
+    category: dbLocation.address ?? '未分類', // addressをcategoryとして使用
+    isActive: (dbLocation._count?.visits ?? 0) > 0, // 訪問履歴があるかどうか
+    address: dbLocation.address ?? undefined,
+    description: dbLocation.description ?? undefined,
   };
 }
 
@@ -55,12 +68,25 @@ export function useVisitLocations() {
   });
 
   // DB結果を変換
-  const locations: VisitLocation[] = dbLocations ? 
-    dbLocations.map(transformDbLocationToVisitLocation) : [];
+  const locations: VisitLocation[] = dbLocations
+    ? dbLocations.map(loc => {
+        // 型安全のためlatitude/longitudeをnumberへ変換
+        const dbLoc = {
+          ...loc,
+          latitude: typeof loc.latitude === 'object' && 'toNumber' in loc.latitude
+            ? Number(loc.latitude.toNumber())
+            : Number(loc.latitude),
+          longitude: typeof loc.longitude === 'object' && 'toNumber' in loc.longitude
+            ? Number(loc.longitude.toNumber())
+            : Number(loc.longitude),
+        } as DbLocation;
+        return transformDbLocationToVisitLocation(dbLoc);
+      })
+    : [];
 
   // エラーメッセージの処理
-  const error = queryError?.message || createMutation.error?.message || 
-                updateMutation.error?.message || deleteMutation.error?.message || null;
+  const error = queryError?.message ?? createMutation.error?.message ?? 
+                updateMutation.error?.message ?? deleteMutation.error?.message ?? null;
 
   // 訪問先の追加
   const addLocation = useCallback(async (location: Omit<VisitLocation, 'id'>) => {
@@ -74,12 +100,23 @@ export function useVisitLocations() {
         name: location.name,
         latitude: location.lat,
         longitude: location.lng,
-        address: location.address || '',
-        description: location.description || '',
+        address: location.address ?? '',
+        description: location.description ?? '',
         created_by,
       });
 
-      const newLocation = transformDbLocationToVisitLocation(dbLocation);
+      // Decimal型のlatitude/longitudeをnumberに変換
+      const dbLoc = {
+        ...dbLocation,
+        latitude: typeof dbLocation.latitude === 'object' && 'toNumber' in dbLocation.latitude
+          ? Number(dbLocation.latitude.toNumber())
+          : Number(dbLocation.latitude),
+        longitude: typeof dbLocation.longitude === 'object' && 'toNumber' in dbLocation.longitude
+          ? Number(dbLocation.longitude.toNumber())
+          : Number(dbLocation.longitude),
+      } as DbLocation;
+
+      const newLocation = transformDbLocationToVisitLocation(dbLoc);
       console.log('useVisitLocations: 訪問先追加成功', newLocation);
 
       return newLocation;
@@ -100,15 +137,25 @@ export function useVisitLocations() {
       
       const dbLocation = await updateMutation.mutateAsync({
         id: parseInt(id),
-        name: updates.name || '',
-        latitude: updates.lat || 0,
-        longitude: updates.lng || 0,
-        address: updates.address || '',
-        description: updates.description || '',
+        name: updates.name ?? '',
+        latitude: updates.lat ?? 0,
+        longitude: updates.lng ?? 0,
+        address: updates.address ?? '',
+        description: updates.description ?? '',
         updated_by,
       });
 
-      const updatedLocation = transformDbLocationToVisitLocation(dbLocation);
+      const dbLoc = {
+        ...dbLocation,
+        latitude: typeof dbLocation.latitude === 'object' && 'toNumber' in dbLocation.latitude
+          ? Number(dbLocation.latitude.toNumber())
+          : Number(dbLocation.latitude),
+        longitude: typeof dbLocation.longitude === 'object' && 'toNumber' in dbLocation.longitude
+          ? Number(dbLocation.longitude.toNumber())
+          : Number(dbLocation.longitude),
+      } as DbLocation;
+
+      const updatedLocation = transformDbLocationToVisitLocation(dbLoc);
       console.log('useVisitLocations: 訪問先更新成功', updatedLocation);
       
       return updatedLocation;
