@@ -45,9 +45,12 @@ export default function GeoloniaMap({
 
   // 訪問先マーカーの作成（locationsのIDが変更された時のみ）
   useEffect(() => {
+    // 現在のlocationsを取得（クロージャー内で使用）
+    const currentLocations = locations;
+    
     console.log('訪問先マーカー作成/更新:', {
       mapInitialized,
-      locationsCount: memoizedLocations.length,
+      locationsCount: currentLocations.length,
       hasMap: !!mapRef.current,
       existingMarkers: locationMarkersRef.current.length,
       locationIds
@@ -59,7 +62,7 @@ export default function GeoloniaMap({
     }
 
     // locationsが空の場合は既存マーカーをクリーンアップ
-    if (memoizedLocations.length === 0) {
+    if (currentLocations.length === 0) {
       console.log('locationsが空のため、既存マーカーをクリーンアップ');
       cleanupMarkers(locationMarkersRef.current, mapContainerRef);
       locationMarkersRef.current = [];
@@ -71,8 +74,8 @@ export default function GeoloniaMap({
     locationMarkersRef.current = [];
     
     // 新しいマーカーを追加
-    console.log('新しいマーカーを追加中...', memoizedLocations.length, '個');
-    memoizedLocations.forEach((location, index) => {
+    console.log('新しいマーカーを追加中...', currentLocations.length, '個');
+    currentLocations.forEach((location, index) => {
       try {
         console.log(`マーカー${index + 1}を作成中:`, location.name, `(${location.lat}, ${location.lng})`);
         // window.geolonia の存在を確認
@@ -94,11 +97,9 @@ export default function GeoloniaMap({
         };
         console.log(`マーカー${index + 1}にlocationDataを設定:`, location.name, location.id);
 
-        // マーカーの初期設定
+        // マーカーの初期設定（選択状態は後で別途更新）
         setTimeout(() => {
           setupMarker(marker, location, onLocationClick);
-          // 初期状態で選択状態を反映
-          updateMarkerAppearance(marker, location, selectedLocationId);
         }, 50);
         
         locationMarkersRef.current.push(marker);
@@ -120,8 +121,26 @@ export default function GeoloniaMap({
       locationMarkersRef.current = [];
       console.log('マーカークリーンアップ完了');
     };
-  }, [mapInitialized, locationIds, onLocationClick, mapRef, mapContainerRef, selectedLocationId, memoizedLocations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapInitialized, locationIds, onLocationClick, mapRef, mapContainerRef]);
 
+  // マーカー作成完了後の選択状態初期化
+  useEffect(() => {
+    if (!mapInitialized || locationMarkersRef.current.length === 0) {
+      return;
+    }
+
+    // マーカー作成後に選択状態を初期化
+    setTimeout(() => {
+      locationMarkersRef.current.forEach((marker) => {
+        const location = marker._locationData;
+        if (location) {
+          updateMarkerAppearance(marker, location, selectedLocationId);
+        }
+      });
+    }, 100);
+  }, [mapInitialized, locationIds, selectedLocationId]);
+  
   // 選択状態が変更された時のマーカー表示更新（マーカー再作成は行わない）
   useEffect(() => {
     console.log('選択状態変更の表示更新:', {
