@@ -1,11 +1,11 @@
 // src/features/map/components/MapControls.tsx
 // マップコントロールコンポーネント
 
-'use client';
+"use client";
 
-import { RefreshCw, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { MapControlsProps } from '@/features/map/types/index';
+import { RefreshCw, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { MapControlsProps } from "@/features/map/types/index";
 
 // マップコントロールコンポーネント
 export default function MapControls({
@@ -20,9 +20,9 @@ export default function MapControls({
       <Button
         onClick={onAddLocation}
         disabled={hasError || isLoading}
-        className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg disabled:opacity-50"
+        className="bg-blue-600 text-white shadow-lg hover:bg-blue-700 disabled:opacity-50"
       >
-        <Plus className="h-4 w-4 mr-2" />
+        <Plus className="mr-2 h-4 w-4" />
         訪問先を追加
       </Button>
 
@@ -31,9 +31,11 @@ export default function MapControls({
         variant="outline"
         onClick={onRefresh}
         disabled={isLoading}
-        className="bg-white hover:bg-gray-50 shadow-lg disabled:opacity-50"
+        className="bg-white shadow-lg hover:bg-gray-50 disabled:opacity-50"
       >
-        <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+        <RefreshCw
+          className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+        />
         更新
       </Button>
     </div>

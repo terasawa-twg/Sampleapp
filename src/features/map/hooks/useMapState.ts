@@ -1,7 +1,7 @@
 // src/features/map/hooks/useMapState.ts
 
-import { useState, useCallback } from 'react';
-import type { MapState, VisitLocation } from '../types';
+import { useState, useCallback } from "react";
+import type { MapState, VisitLocation } from "../types";
 
 // 地図の状態管理フック
 export function useMapState(locations: VisitLocation[]) {
@@ -13,18 +13,18 @@ export function useMapState(locations: VisitLocation[]) {
 
   // 選択中の訪問先を設定
   const selectLocation = useCallback((locationId: string) => {
-    console.log('selectLocation実行:', locationId);
+    console.log("selectLocation実行:", locationId);
 
-    setMapState(prev => ({
+    setMapState((prev) => ({
       ...prev,
       selectedLocationId: locationId,
     }));
-   }, []); // 依存配列は空のまま、存在チェックは削除
+  }, []); // 依存配列は空のまま、存在チェックは削除
 
   // 選択中の訪問先を解除
   const deselectLocation = useCallback(() => {
-    console.log('deselectLocation実行');
-    setMapState(prev => ({
+    console.log("deselectLocation実行");
+    setMapState((prev) => ({
       ...prev,
       selectedLocationId: null,
     }));
@@ -32,7 +32,7 @@ export function useMapState(locations: VisitLocation[]) {
 
   // 地図の初期化状態を設定
   const setMapInitialized = useCallback((initialized: boolean) => {
-    setMapState(prev => ({
+    setMapState((prev) => ({
       ...prev,
       isMapInitialized: initialized,
     }));
@@ -40,7 +40,7 @@ export function useMapState(locations: VisitLocation[]) {
 
   // 地図のエラー状態を設定
   const setMapError = useCallback((error: string | null) => {
-    setMapState(prev => ({
+    setMapState((prev) => ({
       ...prev,
       mapError: error,
     }));
@@ -48,21 +48,22 @@ export function useMapState(locations: VisitLocation[]) {
 
   // 地図のエラー状態をクリア（依存配列を空にして安定化）
   const clearMapError = useCallback(() => {
-    setMapState(prev => ({
+    setMapState((prev) => ({
       ...prev,
       mapError: null,
     }));
   }, []); // setMapErrorへの依存を削除し、直接setMapStateを使用
 
   // 現在選択中のlocationを実際に取得（リアルタイム）
-  const currentSelectedLocation = locations.find(loc => loc.id === mapState.selectedLocationId) ?? null;
+  const currentSelectedLocation =
+    locations.find((loc) => loc.id === mapState.selectedLocationId) ?? null;
 
   // デバッグ用ログ
-  console.log('useMapState状況:', {
+  console.log("useMapState状況:", {
     selectedLocationId: mapState.selectedLocationId,
     selectedLocationExists: !!currentSelectedLocation,
     locationsCount: locations.length,
-    selectedLocationName: currentSelectedLocation?.name ?? 'なし'
+    selectedLocationName: currentSelectedLocation?.name ?? "なし",
   });
 
   return {

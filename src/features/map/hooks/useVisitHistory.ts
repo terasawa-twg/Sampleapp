@@ -1,8 +1,8 @@
 // src/features/map/hooks/useVisitHistory.ts
 
-import { useState, useEffect, useCallback } from 'react';
-import { api } from '@/trpc/react';
-import type { VisitHistory } from '../types';
+import { useState, useEffect, useCallback } from "react";
+import { api } from "@/trpc/react";
+import type { VisitHistory } from "../types";
 
 // 訪問データの型定義
 interface VisitData {
@@ -31,23 +31,26 @@ export function useVisitHistory(locationId?: string) {
       enabled: !!numericLocationId && !isNaN(numericLocationId),
       retry: 1,
       refetchOnWindowFocus: false,
-    }
+    },
   );
 
   // データ変換関数
-  const transformVisitData = useCallback((visits: VisitData[]): VisitHistory[] => {
-    return visits.map(visit => ({
-      id: visit.visit_id.toString(),
-      date: new Date(visit.visit_date).toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      }),
-      location: visit.locations?.name ?? '不明な場所',
-      files: visit.visit_photos?.length ?? 0,
-      description: visit.notes ?? '訪問メモはありません',
-    }));
-  }, []);
+  const transformVisitData = useCallback(
+    (visits: VisitData[]): VisitHistory[] => {
+      return visits.map((visit) => ({
+        id: visit.visit_id.toString(),
+        date: new Date(visit.visit_date).toLocaleDateString("ja-JP", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        location: visit.locations?.name ?? "不明な場所",
+        files: visit.visit_photos?.length ?? 0,
+        description: visit.notes ?? "訪問メモはありません",
+      }));
+    },
+    [],
+  );
 
   // tRPCクエリの状態を監視してstateを更新
   useEffect(() => {
@@ -59,18 +62,20 @@ export function useVisitHistory(locationId?: string) {
     }
 
     setIsLoading(visitQuery.isLoading);
-    
+
     if (visitQuery.error) {
-      setError(visitQuery.error.message ?? '訪問履歴の取得に失敗しました');
+      setError(visitQuery.error.message ?? "訪問履歴の取得に失敗しました");
       setHistory([]);
     } else if (visitQuery.data) {
       try {
-        const transformedData = transformVisitData(visitQuery.data as VisitData[]);
+        const transformedData = transformVisitData(
+          visitQuery.data as VisitData[],
+        );
         setHistory(transformedData);
         setError(null);
       } catch (err) {
-        console.error('データ変換エラー:', err);
-        setError('データの処理に失敗しました');
+        console.error("データ変換エラー:", err);
+        setError("データの処理に失敗しました");
         setHistory([]);
       }
     } else {
@@ -94,7 +99,7 @@ export function useVisitHistory(locationId?: string) {
 
   // デバッグ用ログ
   useEffect(() => {
-    console.log('useVisitHistory状況:', {
+    console.log("useVisitHistory状況:", {
       locationId,
       numericLocationId,
       isLoading,
