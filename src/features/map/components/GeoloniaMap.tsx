@@ -1,0 +1,234 @@
+// src/features/map/components/GeoloniaMap.tsx
+
+"use client";
+
+import { useRef, useEffect, useMemo } from "react";
+import type { GeoloniaMapProps } from "../types";
+import type { GeoloniaMarker } from "../types/geolonia.types";
+import { useMapInitialization } from "../hooks/useMapInitialization";
+import {
+  updateMarkerAppearance,
+  setupMarker,
+  cleanupMarkers,
+} from "../utils/markerUtils";
+
+// GeoloniaMapコンポーネント（マップ機能専用）
+export default function GeoloniaMap({
+  locations,
+  selectedLocationId,
+  isLoading = false,
+  error = null,
+  onLocationClick,
+  onMapError,
+  disableNewMarker = false,
+}: GeoloniaMapProps) {
+  const locationMarkersRef = useRef<GeoloniaMarker[]>([]);
+
+  // 地図初期化のカスタムフック
+  const { mapContainerRef, mapRef, mapInitialized, mapError, isDomReady } =
+    useMapInitialization({
+      disableNewMarker,
+      onMapError,
+    });
+
+  // locationsをメモ化して、無駄な再作成を防ぐ
+  const memoizedLocations = useMemo(() => {
+    console.log("locations メモ化実行:", locations.length);
+    return locations;
+  }, [locations]);
+
+  // locationsのIDリストをメモ化して、実際の変更のみを検出
+  const locationIds = useMemo(() => {
+    return memoizedLocations
+      .map((loc) => loc.id)
+      .sort()
+      .join(",");
+  }, [memoizedLocations]);
+
+  // 訪問先マーカーの作成（locationsのIDが変更された時のみ）
+  useEffect(() => {
+    // 現在のlocationsを取得（クロージャー内で使用）
+    const currentLocations = locations;
+
+    console.log("訪問先マーカー作成/更新:", {
+      mapInitialized,
+      locationsCount: currentLocations.length,
+      hasMap: !!mapRef.current,
+      existingMarkers: locationMarkersRef.current.length,
+      locationIds,
+    });
+
+    if (!mapInitialized || !mapRef.current) {
+      console.log(
+        "地図未初期化またはmapRef未設定のため、マーカー処理をスキップ",
+      );
+      return;
+    }
+
+    // locationsが空の場合は既存マーカーをクリーンアップ
+    if (currentLocations.length === 0) {
+      console.log("locationsが空のため、既存マーカーをクリーンアップ");
+      cleanupMarkers(locationMarkersRef.current, mapContainerRef);
+      locationMarkersRef.current = [];
+      return;
+    }
+
+    // 既存マーカーのクリーンアップ
+    cleanupMarkers(locationMarkersRef.current, mapContainerRef);
+    locationMarkersRef.current = [];
+
+    // 新しいマーカーを追加
+    console.log("新しいマーカーを追加中...", currentLocations.length, "個");
+    currentLocations.forEach((location, index) => {
+      try {
+        console.log(
+          `マーカー${index + 1}を作成中:`,
+          location.name,
+          `(${location.lat}, ${location.lng})`,
+        );
+        // window.geolonia の存在を確認
+        if (!window.geolonia?.Marker) {
+          console.error("window.geolonia.Marker が利用できません");
+          return;
+        }
+
+        const marker = new window.geolonia.Marker()
+          .setLngLat([location.lng, location.lat])
+          .addTo(mapRef.current!);
+
+        // マーカーにlocation情報を紐付け
+        marker._locationData = {
+          id: location.id,
+          name: location.name,
+          lat: location.lat,
+          lng: location.lng,
+        };
+        console.log(
+          `マーカー${index + 1}にlocationDataを設定:`,
+          location.name,
+          location.id,
+        );
+
+        // マーカーの初期設定（選択状態は後で別途更新）
+        setTimeout(() => {
+          setupMarker(marker, location, onLocationClick);
+        }, 50);
+
+        locationMarkersRef.current.push(marker);
+        console.log(`マーカー${index + 1}を作成完了`);
+      } catch (err) {
+        console.warn(
+          `マーカーの作成でエラーが発生しました (${location.name}):`,
+          err,
+        );
+      }
+    });
+
+    return () => {
+      console.log("マーカークリーンアップ開始...");
+      locationMarkersRef.current.forEach((marker) => {
+        try {
+          marker.remove();
+        } catch (err) {
+          console.warn("マーカーのクリーンアップでエラーが発生しました:", err);
+        }
+      });
+      locationMarkersRef.current = [];
+      console.log("マーカークリーンアップ完了");
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapInitialized, locationIds, onLocationClick, mapRef, mapContainerRef]);
+
+  // マーカー作成完了後の選択状態初期化
+  useEffect(() => {
+    if (!mapInitialized || locationMarkersRef.current.length === 0) {
+      return;
+    }
+
+    // マーカー作成後に選択状態を初期化
+    setTimeout(() => {
+      locationMarkersRef.current.forEach((marker) => {
+        const location = marker._locationData;
+        if (location) {
+          updateMarkerAppearance(marker, location, selectedLocationId);
+        }
+      });
+    }, 100);
+  }, [mapInitialized, locationIds, selectedLocationId]);
+
+  // 選択状態が変更された時のマーカー表示更新（マーカー再作成は行わない）
+  useEffect(() => {
+    console.log("選択状態変更の表示更新:", {
+      mapInitialized,
+      markerCount: locationMarkersRef.current.length,
+      selectedLocationId,
+    });
+
+    // マーカーが作成されていない場合は何もしない
+    if (!mapInitialized || locationMarkersRef.current.length === 0) {
+      console.log("選択状態更新をスキップ: マーカー未作成");
+      return;
+    }
+
+    console.log("選択状態のみ更新: マーカー表示を更新中...");
+
+    // 全マーカーの表示を更新（再作成はしない）
+    locationMarkersRef.current.forEach((marker, index) => {
+      const location = marker._locationData;
+      if (location) {
+        console.log(`マーカー${index + 1}の表示更新:`, location.name);
+        updateMarkerAppearance(marker, location, selectedLocationId);
+      }
+    });
+  }, [selectedLocationId, mapInitialized]);
+
+  // エラー表示
+  if (error ?? mapError) {
+    console.log("エラー表示:", { error, mapError });
+    return (
+      <div className="flex h-full items-center justify-center bg-gray-50">
+        <div className="p-6 text-center">
+          <div className="mb-2 text-lg font-medium text-red-500">
+            地図の読み込みに失敗しました
+          </div>
+          <div className="text-sm text-gray-600">{error ?? mapError}</div>
+        </div>
+      </div>
+    );
+  }
+
+  // ローディング表示
+  if (isLoading) {
+    console.log("ローディング表示中（データ読み込み中）");
+    return (
+      <div className="flex h-full items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+          <div className="text-gray-600">地図を読み込んでいます...</div>
+        </div>
+      </div>
+    );
+  }
+
+  console.log("地図コンポーネントレンダリング:", {
+    mapInitialized,
+    isDomReady,
+  });
+
+  return (
+    <div className="relative h-full w-full">
+      <div ref={mapContainerRef} className="h-full w-full" />
+
+      {!mapInitialized && (
+        <div className="bg-opacity-75 absolute inset-0 flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-b-2 border-blue-600"></div>
+            <div className="text-sm text-gray-600">
+              地図を初期化しています...
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
