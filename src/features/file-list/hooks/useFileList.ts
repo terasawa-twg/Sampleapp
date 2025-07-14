@@ -29,14 +29,12 @@ export function useFileList() {
     if (!allFiles) return [];
 
     return allFiles.filter((file) => {
-      // 検索語でのフィルタリング（訪問先名とファイル名）
+      // 検索語でのフィルタリング（訪問先名）
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase();
-        const fileName = file.file_path.split('/').pop() || '';
         const locationName = file.visits.locations.name;
         
-        if (!fileName.toLowerCase().includes(searchLower) && 
-            !locationName.toLowerCase().includes(searchLower)) {
+        if (!locationName.toLowerCase().includes(searchLower)) {
           return false;
         }
       }
