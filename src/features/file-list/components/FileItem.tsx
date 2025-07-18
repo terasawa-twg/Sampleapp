@@ -4,6 +4,7 @@
 import type { FileListItem } from "../types";
 import { FileActions } from "./FileActions";
 import { useState } from "react";
+import Link from "next/link";
 
 interface FileItemProps {
   file: FileListItem;
@@ -86,53 +87,58 @@ export function FileItem({
         </div>
       );
     }
+  };
 
-    return (
-      <div className="flex h-12 w-12 items-center justify-center rounded border bg-gray-100">
-        <div className="text-xs font-medium text-gray-600">
-          {ext?.toUpperCase() ?? "FILE"}
-        </div>
-      </div>
-    );
+    // アクションボタンのクリックイベントを止める
+  const handleActionClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-sm">
-      <div className="flex items-center gap-4">
-        {/* ファイルアイコン/サムネイル */}
-        {renderFileIcon(file.file_path)}
+    <Link href={`/history/${file.visit_id}`} className="block">
+      <div className="rounded-lg border border-gray-200 bg-white p-4 transition-all hover:shadow-md hover:border-gray-300 cursor-pointer">
+        <div className="flex items-center gap-4">
+          {/* ファイルアイコン/サムネイル */}
+          {renderFileIcon(file.file_path)}
 
-        {/* ファイル情報 */}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between">
-            <div className="min-w-0 flex-1">
-              <h3 className="truncate text-sm font-medium text-gray-900">
-                {getFileName(file.file_path)}
-              </h3>
-              <p className="mt-1 text-sm text-gray-600">
-                メモ: {file.description || "なし"}
-              </p>
-              <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
-                <span>{formatDate(file.visits.visit_date)}</span>
-                <span>{file.visits.locations.name}</span>
-                <span>{getFileType(file.file_path)}</span>
+          {/* ファイル情報 */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between">
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-sm font-medium text-gray-900 group-hover:text-blue-600">
+                  {getFileName(file.file_path)}
+                </h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  メモ: {file.description || "なし"}
+                </p>
+                <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                  <span>{formatDate(file.visits.visit_date)}</span>
+                  <span className="font-medium text-blue-600">
+                    {file.visits.locations.name}
+                  </span>
+                  <span>{getFileType(file.file_path)}</span>
+                </div>
+                <div className="mt-1 text-xs text-gray-400">
+                  クリックして訪問履歴の詳細を表示
+                </div>
               </div>
-            </div>
 
-            {/* アクションボタン */}
-            <div className="ml-4 flex-shrink-0">
-              <FileActions
-                photoId={file.photo_id}
-                fileName={getFileName(file.file_path)}
-                filePath={file.file_path}
-                onDownload={onDownload}
-                onDelete={onDelete}
-                isDeleting={isDeleting}
-              />
+              {/* アクションボタン */}
+              <div className="ml-4 flex-shrink-0" onClick={handleActionClick}>
+                <FileActions
+                  photoId={file.photo_id}
+                  fileName={getFileName(file.file_path)}
+                  filePath={file.file_path}
+                  onDownload={onDownload}
+                  onDelete={onDelete}
+                  isDeleting={isDeleting}
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
