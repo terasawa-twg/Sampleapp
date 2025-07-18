@@ -1,8 +1,8 @@
 // src/features/file-list/components/FileActions.tsx
 // ファイル一覧のアクションボタンコンポーネント
 
-import { Download, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Download, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 
 interface FileActionsProps {
   photoId: number;
@@ -24,13 +24,13 @@ interface FileActionsProps {
   isDeleting?: boolean;
 }
 
-export function FileActions({ 
-  photoId, 
-  fileName, 
-  filePath, 
-  onDownload, 
-  onDelete, 
-  isDeleting = false 
+export function FileActions({
+  photoId,
+  fileName,
+  filePath,
+  onDownload,
+  onDelete,
+  isDeleting = false,
 }: FileActionsProps) {
   const handleDownload = () => {
     onDownload(photoId, filePath);
@@ -47,9 +47,9 @@ export function FileActions({
         variant="outline"
         size="sm"
         onClick={handleDownload}
-        className="bg-red-500 text-white hover:bg-red-600 border-red-500"
+        className="border-red-500 bg-red-500 text-white hover:bg-red-600"
       >
-        <Download className="h-4 w-4 mr-1" />
+        <Download className="mr-1 h-4 w-4" />
         ダウンロード
       </Button>
 
@@ -62,7 +62,7 @@ export function FileActions({
             disabled={isDeleting}
             className="border-red-300 text-red-600 hover:bg-red-50"
           >
-            <Trash2 className="h-4 w-4 mr-1" />
+            <Trash2 className="mr-1 h-4 w-4" />
             削除
           </Button>
         </AlertDialogTrigger>
@@ -80,7 +80,7 @@ export function FileActions({
               className="bg-red-500 hover:bg-red-600"
               disabled={isDeleting}
             >
-              {isDeleting ? '削除中...' : '削除'}
+              {isDeleting ? "削除中..." : "削除"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

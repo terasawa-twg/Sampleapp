@@ -1,27 +1,27 @@
 // src/features/file-list/hooks/useFileList.ts
 // ファイル一覧を取得し、フィルタリングやページネーションを行うカスタムフック
 
-import { useState, useMemo } from 'react';
-import { api } from '@/trpc/react';
-import type { FileListFilters, PaginationInfo } from '../types';
+import { useState, useMemo } from "react";
+import { api } from "@/trpc/react";
+import type { FileListFilters, PaginationInfo } from "../types";
 
 const ITEMS_PER_PAGE = 10;
 
 export function useFileList() {
   const [filters, setFilters] = useState<FileListFilters>({
-    searchTerm: '',
+    searchTerm: "",
     dateFrom: undefined,
     dateTo: undefined,
   });
-  
+
   const [currentPage, setCurrentPage] = useState(1);
 
   // tRPCを使ってファイル一覧を取得
-  const { 
-    data: allFiles, 
-    isLoading, 
+  const {
+    data: allFiles,
+    isLoading,
     error,
-    refetch 
+    refetch,
   } = api.visitPhotos.getAll.useQuery();
 
   // フィルタリング処理
@@ -33,7 +33,7 @@ export function useFileList() {
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase();
         const locationName = file.visits.locations.name;
-        
+
         if (!locationName.toLowerCase().includes(searchLower)) {
           return false;
         }
@@ -60,16 +60,19 @@ export function useFileList() {
   }, [filteredFiles, currentPage]);
 
   // ページネーション情報
-  const pagination: PaginationInfo = useMemo(() => ({
-    currentPage,
-    totalPages: Math.ceil(filteredFiles.length / ITEMS_PER_PAGE),
-    totalItems: filteredFiles.length,
-    itemsPerPage: ITEMS_PER_PAGE,
-  }), [filteredFiles.length, currentPage]);
+  const pagination: PaginationInfo = useMemo(
+    () => ({
+      currentPage,
+      totalPages: Math.ceil(filteredFiles.length / ITEMS_PER_PAGE),
+      totalItems: filteredFiles.length,
+      itemsPerPage: ITEMS_PER_PAGE,
+    }),
+    [filteredFiles.length, currentPage],
+  );
 
   // フィルター更新関数
   const updateFilters = (newFilters: Partial<FileListFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
+    setFilters((prev) => ({ ...prev, ...newFilters }));
     setCurrentPage(1); // フィルター変更時は最初のページに戻る
   };
 
@@ -81,7 +84,7 @@ export function useFileList() {
   // フィルターリセット
   const resetFilters = () => {
     setFilters({
-      searchTerm: '',
+      searchTerm: "",
       dateFrom: undefined,
       dateTo: undefined,
     });

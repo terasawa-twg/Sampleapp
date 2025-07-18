@@ -1,9 +1,9 @@
 // src/features/file-list/components/Pagination.tsx
 // ページネーションコンポーネント
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { PaginationInfo } from '../types';
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { PaginationInfo } from "../types";
 
 interface PaginationProps {
   pagination: PaginationInfo;
@@ -17,7 +17,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
   const getPageNumbers = () => {
     const pages: number[] = [];
     const maxVisiblePages = 5;
-    
+
     if (totalPages <= maxVisiblePages) {
       // 総ページ数が少ない場合は全て表示
       for (let i = 1; i <= totalPages; i++) {
@@ -28,17 +28,17 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
       const half = Math.floor(maxVisiblePages / 2);
       let start = Math.max(1, currentPage - half);
       const end = Math.min(totalPages, start + maxVisiblePages - 1);
-      
+
       // 末尾調整
       if (end - start + 1 < maxVisiblePages) {
         start = Math.max(1, end - maxVisiblePages + 1);
       }
-      
+
       for (let i = start; i <= end; i++) {
         pages.push(i);
       }
     }
-    
+
     return pages;
   };
 
@@ -57,7 +57,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
   }
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
+    <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3">
       {/* アイテム数表示 */}
       <div className="text-sm text-gray-700">
         {totalItems}件中 {start}〜{end}件を表示
@@ -86,12 +86,12 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
                 variant={1 === currentPage ? "default" : "outline"}
                 size="sm"
                 onClick={() => onPageChange(1)}
-                className="w-8 h-8 p-0"
+                className="h-8 w-8 p-0"
               >
                 1
               </Button>
               {pageNumbers[0]! > 2 && (
-                <span className="text-gray-400 px-1">...</span>
+                <span className="px-1 text-gray-400">...</span>
               )}
             </>
           )}
@@ -103,9 +103,9 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
               variant={page === currentPage ? "default" : "outline"}
               size="sm"
               onClick={() => onPageChange(page)}
-              className={`w-8 h-8 p-0 ${
-                page === currentPage 
-                  ? "bg-red-500 hover:bg-red-600 text-white" 
+              className={`h-8 w-8 p-0 ${
+                page === currentPage
+                  ? "bg-red-500 text-white hover:bg-red-600"
                   : ""
               }`}
             >
@@ -114,21 +114,22 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
           ))}
 
           {/* 最後のページが表示されていない場合 */}
-          {pageNumbers.length > 0 && pageNumbers[pageNumbers.length - 1]! < totalPages && (
-            <>
-              {pageNumbers[pageNumbers.length - 1]! < totalPages - 1 && (
-                <span className="text-gray-400 px-1">...</span>
-              )}
-              <Button
-                variant={totalPages === currentPage ? "default" : "outline"}
-                size="sm"
-                onClick={() => onPageChange(totalPages)}
-                className="w-8 h-8 p-0"
-              >
-                {totalPages}
-              </Button>
-            </>
-          )}
+          {pageNumbers.length > 0 &&
+            pageNumbers[pageNumbers.length - 1]! < totalPages && (
+              <>
+                {pageNumbers[pageNumbers.length - 1]! < totalPages - 1 && (
+                  <span className="px-1 text-gray-400">...</span>
+                )}
+                <Button
+                  variant={totalPages === currentPage ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onPageChange(totalPages)}
+                  className="h-8 w-8 p-0"
+                >
+                  {totalPages}
+                </Button>
+              </>
+            )}
         </div>
 
         {/* 次のページボタン */}

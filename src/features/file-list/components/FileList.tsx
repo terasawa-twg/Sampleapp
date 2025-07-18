@@ -1,19 +1,19 @@
 // src/features/file-list/components/FileList.tsx
 // ファイル一覧コンポーネント
 
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { api } from '@/trpc/react';
-import { useFileList } from '../hooks/useFileList';
-import { FilterSidebar } from './FilterSidebar';
-import { FileListContent } from './FileListContent';
-import { Button } from '@/components/ui/button';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { useState } from "react";
+import { api } from "@/trpc/react";
+import { useFileList } from "../hooks/useFileList";
+import { FilterSidebar } from "./FilterSidebar";
+import { FileListContent } from "./FileListContent";
+import { Button } from "@/components/ui/button";
+import { Loader2, RefreshCw } from "lucide-react";
 
 export function FileList() {
   const [deletingFileId, setDeletingFileId] = useState<number | null>(null);
-  
+
   const {
     files,
     filters,
@@ -32,7 +32,7 @@ export function FileList() {
       setDeletingFileId(null);
     },
     onError: (error) => {
-      console.error('ファイル削除エラー:', error);
+      console.error("ファイル削除エラー:", error);
       setDeletingFileId(null);
     },
   });
@@ -41,25 +41,25 @@ export function FileList() {
   const handleDownload = async (photoId: number, filePath: string) => {
     try {
       // ファイルが存在するかチェック
-      const response = await fetch(filePath, { method: 'HEAD' });
-      
+      const response = await fetch(filePath, { method: "HEAD" });
+
       if (!response.ok) {
         console.warn(`ファイルが見つかりません: ${filePath}`);
-        alert('ファイルが見つかりません。管理者にお問い合わせください。');
+        alert("ファイルが見つかりません。管理者にお問い合わせください。");
         return;
       }
-      
+
       // ファイルが存在する場合のダウンロード処理
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = filePath;
-      link.download = filePath.split('/').pop() ?? 'file';
-      link.target = '_blank'; 
+      link.download = filePath.split("/").pop() ?? "file";
+      link.target = "_blank";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error('ダウンロードエラー:', error);
-      alert('ダウンロードに失敗しました。管理者にお問い合わせください。');
+      console.error("ダウンロードエラー:", error);
+      alert("ダウンロードに失敗しました。管理者にお問い合わせください。");
     }
   };
 
@@ -70,14 +70,14 @@ export function FileList() {
   };
 
   // アクティブフィルターの数を計算
-  const activeFilterCount = 
+  const activeFilterCount =
     (filters.searchTerm ? 1 : 0) +
     (filters.dateFrom ? 1 : 0) +
     (filters.dateTo ? 1 : 0);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex h-64 items-center justify-center">
         <div className="flex items-center gap-2 text-gray-600">
           <Loader2 className="h-5 w-5 animate-spin" />
           <span>読み込み中...</span>
@@ -88,11 +88,11 @@ export function FileList() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex h-64 items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">エラーが発生しました: {error}</p>
+          <p className="mb-4 text-red-600">エラーが発生しました: {error}</p>
           <Button onClick={() => void refetch()} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className="mr-2 h-4 w-4" />
             再試行
           </Button>
         </div>
@@ -114,10 +114,7 @@ export function FileList() {
       />
 
       {/* フィルターサイドバー */}
-      <FilterSidebar
-        filters={filters}
-        updateFilters={updateFilters}
-      />
+      <FilterSidebar filters={filters} updateFilters={updateFilters} />
     </div>
   );
 }

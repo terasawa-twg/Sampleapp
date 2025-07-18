@@ -1,6 +1,6 @@
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // 日付範囲フィルターの型定義
 interface DateRangeFilterProps {
@@ -11,15 +11,15 @@ interface DateRangeFilterProps {
 }
 
 // 日付範囲フィルターコンポーネント
-export function DateRangeFilter({ 
-  dateFrom, 
-  dateTo, 
-  onDateFromChange, 
-  onDateToChange 
+export function DateRangeFilter({
+  dateFrom,
+  dateTo,
+  onDateFromChange,
+  onDateToChange,
 }: DateRangeFilterProps) {
   const formatDateForInput = (date?: Date) => {
-    if (!date) return '';
-    return date.toISOString().split('T')[0];
+    if (!date) return "";
+    return date.toISOString().split("T")[0];
   };
 
   const parseDateFromInput = (dateString: string) => {
@@ -41,11 +41,13 @@ export function DateRangeFilter({
             id="date-from"
             type="date"
             value={formatDateForInput(dateFrom)}
-            onChange={(e) => onDateFromChange(parseDateFromInput(e.target.value))}
+            onChange={(e) =>
+              onDateFromChange(parseDateFromInput(e.target.value))
+            }
             className="mt-1"
           />
         </div>
-        <div className="text-center text-gray-400 text-sm">〜</div>
+        <div className="text-center text-sm text-gray-400">〜</div>
         <div>
           <Label htmlFor="date-to" className="text-sm font-normal">
             終了日
