@@ -42,7 +42,7 @@ export function FilterSidebar({ filters, updateFilters }: FilterSidebarProps) {
             )}
             
             {/* 日付範囲フィルター */}
-            {(filters.dateFrom || filters.dateTo) && (
+            {(filters.dateFrom ?? filters.dateTo) && (
               <Button
                 variant="outline"
                 size="sm"

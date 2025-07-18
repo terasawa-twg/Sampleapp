@@ -27,7 +27,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
       // 現在のページを中心に表示
       const half = Math.floor(maxVisiblePages / 2);
       let start = Math.max(1, currentPage - half);
-      let end = Math.min(totalPages, start + maxVisiblePages - 1);
+      const end = Math.min(totalPages, start + maxVisiblePages - 1);
       
       // 末尾調整
       if (end - start + 1 < maxVisiblePages) {

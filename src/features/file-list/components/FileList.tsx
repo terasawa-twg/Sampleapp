@@ -28,7 +28,7 @@ export function FileList() {
   // ファイル削除のmutation
   const deleteFileMutation = api.visitPhotos.delete.useMutation({
     onSuccess: () => {
-      refetch();
+      void refetch();
       setDeletingFileId(null);
     },
     onError: (error) => {
@@ -52,7 +52,7 @@ export function FileList() {
       // ファイルが存在する場合のダウンロード処理
       const link = document.createElement('a');
       link.href = filePath;
-      link.download = filePath.split('/').pop() || 'file';
+      link.download = filePath.split('/').pop() ?? 'file';
       link.target = '_blank'; 
       document.body.appendChild(link);
       link.click();
@@ -64,7 +64,7 @@ export function FileList() {
   };
 
   // 削除処理
-  const handleDelete = async (photoId: number) => {
+  const handleDelete = (photoId: number) => {
     setDeletingFileId(photoId);
     deleteFileMutation.mutate({ id: photoId });
   };
@@ -91,7 +91,7 @@ export function FileList() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <p className="text-red-600 mb-4">エラーが発生しました: {error}</p>
-          <Button onClick={() => refetch()} variant="outline">
+          <Button onClick={() => void refetch()} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             再試行
           </Button>
@@ -112,7 +112,6 @@ export function FileList() {
         onPageChange={handlePageChange}
         deletingFileId={deletingFileId}
       />
-
 
       {/* フィルターサイドバー */}
       <FilterSidebar

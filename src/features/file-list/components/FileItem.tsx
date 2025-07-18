@@ -3,7 +3,7 @@
 
 import type { FileListItem } from '../types';
 import { FileActions } from './FileActions';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface FileItemProps {
   file: FileListItem;
@@ -13,11 +13,11 @@ interface FileItemProps {
 }
 
 export function FileItem({ file, onDownload, onDelete, isDeleting }: FileItemProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+
   // ファイル名をパスから抽出
   const getFileName = (filePath: string) => {
-    return filePath.split('/').pop() || filePath;
+    return filePath.split('/').pop() ?? filePath;
   };
 
   // 日付をフォーマット
@@ -57,7 +57,7 @@ export function FileItem({ file, onDownload, onDelete, isDeleting }: FileItemPro
   // ファイルアイコンを表示（画像の場合はサムネイル風に）
   const renderFileIcon = (filePath: string) => {
     const ext = filePath.split('.').pop()?.toLowerCase();
-    const isImage = ['jpg', 'jpeg', 'png', 'gif'].includes(ext || '');
+    const isImage = ['jpg', 'jpeg', 'png', 'gif'].includes(ext ?? '');
     
     if (isImage) {
       if (imageError) {
@@ -70,11 +70,11 @@ export function FileItem({ file, onDownload, onDelete, isDeleting }: FileItemPro
 
       return (
         <div className="w-12 h-12 bg-gray-100 rounded border overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 
             src={filePath} 
             alt="サムネイル" 
             className="w-full h-full object-cover"
-            onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
             style={{ display: imageError ? 'none' : 'block' }}
           />
@@ -85,7 +85,7 @@ export function FileItem({ file, onDownload, onDelete, isDeleting }: FileItemPro
     return (
       <div className="w-12 h-12 bg-gray-100 rounded border flex items-center justify-center">
         <div className="text-xs text-gray-600 font-medium">
-          {ext?.toUpperCase() || 'FILE'}
+          {ext?.toUpperCase() ?? 'FILE'}
         </div>
       </div>
     );

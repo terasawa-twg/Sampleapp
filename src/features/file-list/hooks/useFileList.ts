@@ -1,9 +1,9 @@
-// src/features/file-list/hooks/useFileList.tsx
+// src/features/file-list/hooks/useFileList.ts
 // ファイル一覧を取得し、フィルタリングやページネーションを行うカスタムフック
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { api } from '@/trpc/react';
-import type { FileListItem, FileListFilters, PaginationInfo } from '../types';
+import type { FileListFilters, PaginationInfo } from '../types';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -93,7 +93,7 @@ export function useFileList() {
     filters,
     pagination,
     loading: isLoading,
-    error: error?.message || null,
+    error: error?.message ?? null,
     updateFilters,
     handlePageChange,
     resetFilters,
